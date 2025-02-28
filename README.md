@@ -1,2 +1,4 @@
 # cpu
-a simple risc based processor
+
+- A simple RISC based processor.
+- Detailed explanation will be given below.
