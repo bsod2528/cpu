@@ -15,3 +15,11 @@ A basic RISC processor designed in AMD Vivado and written in Verilog. As time pe
     - **Control Flow:** `HALT`, `JUMP`
 - **Immediate Value Support:** To simplify the arithmetic operations as of now.
 - **Basic Stack** (*Future Implementation as it's really ambitious*)**:** To support function calls for easy memory management.
+
+# Setup
+Well if you really wanna try this out go ahead.
+- Install AMD Vivado
+- Clone this repo.
+- Create a project called `cpu` or whatever in Vivado.
+- Use the [`design sources`](design%20sources/) for creating RTL Design modules && (haha) [`testbenches`](testbenches/) for...testbenches.
+- Simulate | (again...haha) synthesize your wish.
