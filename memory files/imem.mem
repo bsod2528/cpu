@@ -1,0 +1,11 @@
+// comments aren't here in the actual `.mem` file so be sure to remove them.
+// address - instruction - decimal value - index value
+
+0000_0000_0000_0001 // ADD - 1 - 0
+0000_0000_0000_0010 // SUB - 2 - 1
+0000_0000_0000_0100 // MUL - 4 - 2
+0000_0000_0000_1000 // DIV - 8 - 3
+0000_0000_0001_0000 // LOAD - 16 - 4
+0000_0000_0010_0000 // STORE - 32 - 5
+0000_0001_0000_0000 // HALT - 256 - 6
+0000_0010_0000_0000 // JUMP - 512 - 7
