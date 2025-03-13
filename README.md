@@ -16,15 +16,15 @@ I'm calling it `VR16` 🙂👍.
 - **Immediate Value Support:** To simplify the arithmetic operations as of now.
 - **Basic Stack** (*Future Implementation as it's really ambitious*)**:** To support function calls for easy memory management.
 
-## Machine Instructions
-- `ADD`: 0000_0000_0000_0001
-- `SUB`: 0000_0000_0000_0010
-- `MUL`: 0000_0000_0000_0100
-- `DIV`: 0000_0000_0000_1000
-- `LOAD`: 0000_0000_0001_0000
-- `STORE`: 0000_0000_0010_0000
-- `HALT`: 0000_0001_0000_0000
-- `JUMP`: 0000_0010_0000_0000
+## Opcodes
+1. `ADD`: 0001
+2. `SUB`: 0010
+3. `MUL`: 0011
+4. `DIV`: 0100
+5. `LOAD`: 0101
+6. `STORE`: 0110
+7. `HALT`: 0111
+8. `JUMP`: 1000
 
 ---
 

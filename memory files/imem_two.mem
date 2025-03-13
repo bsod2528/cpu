@@ -1,0 +1,19 @@
+// comments aren't here in the actual `.mem` file so be sure to remove them.
+// also the `_` isnt used in the real mem file while giving it as input while simulating. remember to remove that too.
+
+// okay so this is used to give as input for the "instruction decoder"
+// `imem.mem` is the older version which was used to give into the "instruction memory"
+
+// | 0000 | 0000 | 0000 | 0000 |
+// | opcode | reg_a | reg_b | immediate_value |
+
+0001_0001_0001_0000
+0010_0011_0001_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000
+0011_0000_0000_0000

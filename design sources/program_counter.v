@@ -5,9 +5,9 @@ module program_counter(counter_reg, jump_enable, jump_address, return_enable, cl
     input jump_enable, return_enable, clk, reset;
     input [15:0] jump_address;
     output reg [15:0] counter_reg;
-    
+
     reg [15:0] temp_address;
-    
+
     always @ (posedge clk or posedge reset) begin
         if (reset)
             counter_reg <= 0;

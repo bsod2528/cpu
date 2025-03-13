@@ -11,6 +11,10 @@ All notable changes will be logged here.
 ### Added
 - [Instruction memory](/design%20sources/instruction_memory.v), [testbench](/testbenches/tb_imem.v), including the [memory file](/memory%20files/imem.mem): PC points the address, this gives the instruction.
 
+## 13/03/2025
+### Added
+- [Instruction decoder](/design%20sources/instruction_decoder.v), [testbench](/testbenches/tb_id.v), including the [memory file](/memory%20files/imem_two.mem): The instruction given by the Instruction memory is further split into 4 parts. This is the main decoding stage.
+
 ---
 
 ### Known Behavior

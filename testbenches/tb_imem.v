@@ -16,7 +16,7 @@ module tb_imem();
     reg jump_enable, return_enable, clk, reset, imem_enable;
     reg [15:0] jump_address;
     wire [15:0] counter_reg, instruction;
-    
+
     program_counter dut_pc(
         .counter_reg(counter_reg),
         .jump_enable(jump_enable),
@@ -25,16 +25,16 @@ module tb_imem();
         .clk(clk),
         .reset(reset)
     );
-    
+
     instruction_memory dut_imem(
         .clk(clk),
         .address(counter_reg),
         .enable(imem_enable),
         .instruction(instruction)
     );
-    
+
     always #5 clk = ~clk;
-    
+
     initial begin
         clk = 0;
         reset = 1;
@@ -42,9 +42,9 @@ module tb_imem();
         jump_address = 0;
         return_enable = 0;
         imem_enable = 0;
-        
+
         #5 reset = 0; imem_enable = 1; jump_enable = 1; jump_address = 16'b0000_0000_0000_0100;
-        #10 jump_enable = 0; 
+        #10 jump_enable = 0;
         #10 return_enable = 1;
         #5 return_enable = 0;
         #90 $finish;
