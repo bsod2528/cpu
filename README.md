@@ -1,6 +1,6 @@
 # cpu
 
-A basic RISC processor designed in AMD Vivado and written in Verilog. As time permits, this will be made better and backend design will also be updated.
+A basic RISC processor designed and written in Verilog. As time permits, this will be made better and backend design will also be updated.
 
 I'm calling it `VR16` 🙂👍.
 
@@ -30,7 +30,7 @@ I'm calling it `VR16` 🙂👍.
 
 # Setup
 Well if you really wanna try this out go ahead. I use Vivado as I can simulate within, others like GTKWave can also be used to simulate the testbench.
-- Install AMD Vivado
+- Install AMD Vivado / iverilog and GTKWave / any FGPA software realistically.
 - Clone this repo.
 - Create a project called `cpu` or whatever in Vivado.
 - Use the [`design sources`](design%20sources/) for creating RTL Design modules && (haha) [`testbenches`](testbenches/) for...testbenches.

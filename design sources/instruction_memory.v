@@ -26,14 +26,14 @@ module instruction_memory(clk, reset, address, enable, instruction);
     input clk, reset, enable;
     input [15:0] address;
     output reg [15:0] instruction;
-    
-    reg [15:0] imem [255:0]; // just 256 instructions for now which will.
-    
+
+    reg [15:0] imem [0:255]; // just 256 instructions for now which will.
+
     initial begin
         instruction = 16'b0000_0000_0000_0000;
-        $readmemb("C:/cpu/cpu.srcs/sources_1/new/imem.mem", imem);
+        $readmemb("memory files/imem.mem", imem, 0, 9);
     end
-    
+
     always @ (posedge clk or reset) begin
         $display("AT: %t", $time);
         if (reset)

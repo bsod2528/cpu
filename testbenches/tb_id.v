@@ -59,6 +59,9 @@ module tb_id();
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_id);
+        
         clk = 0;
         reset = 1;
         jump_enable = 0;
@@ -67,6 +70,6 @@ module tb_id();
         imem_enable = 0;
 
         #5 reset = 0; imem_enable = 1;
-        #45 $finish;
+        #50 $finish;
     end
 endmodule
