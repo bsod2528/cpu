@@ -5,7 +5,7 @@ module tb_id();
     reg jump_enable, return_enable, clk, reset, imem_enable;
     reg [15:0] jump_address;
     wire [15:0] counter_reg, instruction;
-    wire [3:0] opcode, reg_a, reg_b, imm_value;
+    wire [3:0] opcode, reg_a, reg_b, reg_c, reg_d, imm_value;
 
     program_counter dut_pc(
         .counter_reg(counter_reg),
@@ -30,6 +30,8 @@ module tb_id();
         .reset(reset),
         .reg_a(reg_a),
         .reg_b(reg_b),
+        .reg_c(reg_c),
+        .reg_d(reg_d),
         .imm_value(imm_value)
     );
 

@@ -9,7 +9,7 @@ I'm calling it `VR16` 🙂👍.
 - **Program Counter:** Increments the `fetching` cycle of the CPU. Supports branching, thus one can come back to previous state.
 - **Instruction Memory:** Memory to hold the instructions for the CPU.
 - **General Purpose Registers:** 4x16-bit registers has been planned for now, to store values for arithmetic operations.
-- **Basic Instruction Set:** I'll give this one my own name soon, cause 🙂.
+- **Basic Instruction Set:** Instruction Set Architecture (ISA) is called `VR16-ISA`.
     - **Arithmetic:** `ADD`, `SUB`, `MUL`, `DIV`
     - **Memory:** `LOAD`, `STORE`
     - **Control Flow:** `HALT`, `JUMP`
