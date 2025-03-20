@@ -17,6 +17,7 @@ I'm calling it `VR16` 🙂👍.
 - **Basic Stack** (*Future Implementation as it's really ambitious*)**:** To support function calls for easy memory management.
 
 ## Opcodes
+SUBJECT TO CHANGE
 1. `ADD`: 0001
 2. `SUB`: 0010
 3. `MUL`: 0011
@@ -29,9 +30,11 @@ I'm calling it `VR16` 🙂👍.
 ---
 
 # Setup
-Well if you really wanna try this out go ahead. I use Vivado as I can simulate within, others like GTKWave can also be used to simulate the testbench.
-- Install AMD Vivado / iverilog and GTKWave / any FGPA software realistically.
-- Clone this repo.
-- Create a project called `cpu` or whatever in Vivado.
-- Use the [`design sources`](design%20sources/) for creating RTL Design modules && (haha) [`testbenches`](testbenches/) for...testbenches.
-- Simulate | (again...haha) synthesize your wish.
+- Clone the repo.
+- Ensure both [compile.sh](compile.sh) and [run_sim.sh](run_sim.sh) have rights to run (chmod +x) if you're on Linux.
+- Run `compile.sh` first and then `run_sim.sh` to view the GTKwave.
+- To view the waveforms on Windows, please use Vivado or Quartus. No need to run the `.sh` files in that case. 
+
+--- 
+# Licensing
+All `.v` files come under the GPLv3. Hardware files will be added as time goes on, which will use the CERN-OHL-S license.
