@@ -1,6 +1,6 @@
-// 16-CPU: A basic 16-bit RISC processor
+// VR16: A basic 16-bit RISC processor
 // Copyright (C) 2025 Vishal Srivatsava AV
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,7 @@ module tb_id();
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, tb_id);
-        
+
         clk = 0;
         reset = 1;
         jump_enable = 0;

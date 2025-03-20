@@ -14,39 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+module tb_gpr();
+    reg write_enable, clk, reset;
+    reg [1:0] select_reg;
+    reg [15:0] alu_result;
 
-`timescale 1ns / 1ps
+    wire [15:0] reg_a_out, reg_b_out, reg_c_out, reg_d_out;
 
-
-module tb_pc();
-    reg jump_enable, return_enable, clk, reset;
-    reg [15:0] jump_address;
-    wire [15:0] counter_reg;
-
-    program_counter dut(
-        .counter_reg(counter_reg),
-        .jump_enable(jump_enable),
-        .jump_address(jump_address),
-        .return_enable(return_enable),
+    gp_registers dut(
+        .write_enable(write_enable),
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .select_reg(select_reg),
+        .alu_result(alu_result),
+        .reg_a_out(reg_a_out),
+        .reg_b_out(reg_b_out),
+        .reg_c_out(reg_c_out),
+        .reg_d_out(reg_d_out)
     );
 
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_gpr);
+
         clk = 0;
         reset = 1;
-        jump_enable = 0;
-        jump_address = 0;
-        return_enable = 0;
+        write_enable = 0;
 
-        #10 reset = 0;
-
-        #20 jump_enable = 1; jump_address = 16'b0011001100110011;
-        #10 jump_enable = 0;
-        #10 return_enable = 1;
-        #10 return_enable = 0;
+        #10 reset = 0; write_enable = 1; alu_result = 16'b0001_0001_0001_0001; select_reg = 2'b00;
+        #10 select_reg = 2'b11;
+        #10 write_enable = 0;
         #10 $finish;
     end
 endmodule
