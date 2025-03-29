@@ -15,6 +15,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
+`timescale 1ns / 1ps
+
+
 module gp_registers (
     write_enable, clk, reset, select_reg, alu_result,
     reg_a_out, reg_b_out, reg_c_out, reg_d_out

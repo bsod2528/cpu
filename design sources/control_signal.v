@@ -15,28 +15,24 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-`timescale 1ns / 1ps
+`timescale 1ps/1ps
+// For now, the ALU isn't being done cause I cannot fathom how that piece of code works.
+// Just gonna write a simple control signal, based on how the ALU works, this will be changed.
+module control_signal(clk, reset, ins_done, ins_count);
+    // just a flag so it's 1 bit.
+    input clk, reset, ins_done;
+    output wire ins_count;
 
-// I've been spamming can you hear the music while doing this HAHA.
-module program_counter(ins_count, counter_reg, jump_enable, jump_address, return_enable, clk, reset);
-    input ins_count, jump_enable, return_enable, clk, reset;
-    input [15:0] jump_address;
-    output reg [15:0] counter_reg;
-
-    reg [15:0] temp_address;
+    reg _ins_count;
 
     always @ (posedge clk or posedge reset) begin
         if (reset)
-            counter_reg <= 0;
-        else if (ins_count) begin
-            if (jump_enable) begin
-                temp_address <= counter_reg;
-                counter_reg <= jump_address;
-            end
-            else if (return_enable)
-                counter_reg <= temp_address;
-            else
-                counter_reg <= counter_reg + 1;
-        end
+            _ins_count <= 0;
+        else if (ins_done)
+            _ins_count <= 1;
+        else 
+            _ins_count <= 0;
     end
+
+    assign ins_count = _ins_count;
 endmodule
