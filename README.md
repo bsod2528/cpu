@@ -4,6 +4,9 @@ A basic RISC processor designed and written in Verilog. As time permits, this wi
 
 I'm calling it `VR16` 🙂👍.
 
+Checkout my blogs here on it so far: [Dev-Blogs](https://bsod2528.github.io/pages/tags.html)
+Click on blogs under the tag `soc-dev`
+
 ## Features
 - **16-bit Architecture**: All registers have 16 storage allowing higher levels of computing.
 - **Program Counter:** Increments the `fetching` cycle of the CPU. Supports branching, thus one can come back to previous state.
@@ -21,7 +24,7 @@ This is yet to be done, and my mind is too small for this. Please do check insid
 
 # Setup
 - Clone the repo.
-- Ensure both [compile.sh](compile.sh) and [run_sim.sh](run_sim.sh) have rights to run (chmod +x) if you're on Linux.
+- Ensure both [compile.sh](compile.sh) and [sim.sh](sim.sh) have rights to run (chmod +x) if you're on Linux.
 - Run `compile.sh` first and then `run_sim.sh` to view the GTKwave.
 - To view the waveforms on Windows, please use Vivado or Quartus. No need to run the `.sh` files in that case. 
 
