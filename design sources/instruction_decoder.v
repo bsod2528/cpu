@@ -24,7 +24,10 @@
 module instruction_decoder(instruction, clk, reset, opcode, reg_a, reg_b, reg_c, reg_d, imm_value);
     input clk, reset;
     input [15:0] instruction;
-    output reg [3:0] opcode, reg_a, reg_b, reg_c, reg_d, imm_value; // imm_value == immediate value
+    output reg [3:0] opcode, imm_value; // imm_value == immediate value
+
+    // I'm such a big dimwit, I've mentioned that my regs would be 2 bits and i've initially initialised them as 4 bits.
+    output reg [1:0] reg_a, reg_b, reg_c, reg_d;
 
     always @ (posedge clk or posedge reset) begin
         if (reset) begin

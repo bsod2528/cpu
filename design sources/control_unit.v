@@ -15,10 +15,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-`timescale 1ps/1ps
+`timescale 1ns / 1ps
 // For now, the ALU isn't being done cause I cannot fathom how that piece of code works.
 // Just gonna write a simple control signal, based on how the ALU works, this will be changed.
-module control_signal(clk, reset, ins_done, ins_count);
+module control_unit(clk, reset, ins_done, ins_count);
     // just a flag so it's 1 bit.
     input clk, reset, ins_done;
     output wire ins_count;

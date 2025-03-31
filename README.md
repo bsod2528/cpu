@@ -16,18 +16,8 @@ I'm calling it `VR16` 🙂👍.
 - **Immediate Value Support:** To simplify the arithmetic operations as of now.
 - **Basic Stack** (*Future Implementation as it's really ambitious*)**:** To support function calls for easy memory management.
 
-## Opcodes
-SUBJECT TO CHANGE
-1. `ADD`: 0001
-2. `SUB`: 0010
-3. `MUL`: 0011
-4. `DIV`: 0100
-5. `LOAD`: 0101
-6. `STORE`: 0110
-7. `HALT`: 0111
-8. `JUMP`: 1000
-
----
+## Instruction Sets
+This is yet to be done, and my mind is too small for this. Please do check inside `misc/` for files which have `isa_x.md`. These layout the different iterations of the VR16-ISA.
 
 # Setup
 - Clone the repo.
@@ -35,6 +25,5 @@ SUBJECT TO CHANGE
 - Run `compile.sh` first and then `run_sim.sh` to view the GTKwave.
 - To view the waveforms on Windows, please use Vivado or Quartus. No need to run the `.sh` files in that case. 
 
---- 
 # Licensing
 All `.v` files come under the GPLv3. Hardware files will be added as time goes on, which will use the CERN-OHL-S license.

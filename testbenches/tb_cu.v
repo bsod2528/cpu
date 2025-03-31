@@ -55,7 +55,7 @@ module tb_cs();
         .imm_value(imm_value)
     );
 
-    control_signal dut_cs(
+    control_unit dut_cs(
         .clk(clk),
         .reset(reset),
         .ins_done(ins_done),
