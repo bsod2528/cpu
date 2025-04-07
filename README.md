@@ -17,12 +17,12 @@ I'm calling it `VR16` 🙂👍.
 - **Basic Stack** (*Future Implementation as it's really ambitious*)**:** To support function calls for easy memory management.
 
 ## Instruction Sets
-This is yet to be done, and my mind is too small for this. Please do check inside `misc/` for files which have `isa_x.md`. These layout the different iterations of the VR16-ISA.
+Check out `ISA.md`.
 
 # Setup
 - Clone the repo.
-- Ensure both [compile.sh](compile.sh) and [run_sim.sh](run_sim.sh) have rights to run (chmod +x) if you're on Linux.
-- Run `compile.sh` first and then `run_sim.sh` to view the GTKwave.
+- Ensure both [compile.sh](compile.sh) and [sim.sh](sim.sh) have rights to run (chmod +x) if you're on Linux.
+- Run `compile.sh` first and then `sim.sh` to view the GTKwave.
 - To view the waveforms on Windows, please use Vivado or Quartus. No need to run the `.sh` files in that case. 
 
 # Licensing

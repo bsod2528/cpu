@@ -18,8 +18,13 @@
 `timescale 1ns / 1ps
 
 // I've been spamming can you hear the music while doing this HAHA.
-module program_counter(ins_count, counter_reg, jump_enable, jump_address, return_enable, clk, reset);
+module program_counter(
+    clk, reset,
+    ins_count, flag_input_from_control_unit,
+    counter_reg, jump_enable, jump_address, return_enable,
+);
     input ins_count, jump_enable, return_enable, clk, reset;
+    input [1:0] flag_input_from_control_unit;
     input [15:0] jump_address;
     output reg [15:0] counter_reg;
 
@@ -27,7 +32,7 @@ module program_counter(ins_count, counter_reg, jump_enable, jump_address, return
 
     always @ (posedge clk or posedge reset) begin
         if (reset)
-            counter_reg <= 0;
+            counter_reg <= 16'b0000_0000_0000_0000;
         else if (ins_count) begin
             if (jump_enable) begin
                 temp_address <= counter_reg;
@@ -35,6 +40,8 @@ module program_counter(ins_count, counter_reg, jump_enable, jump_address, return
             end
             else if (return_enable)
                 counter_reg <= temp_address;
+            else if (flag_input_from_control_unit == 2'b11)
+                counter_reg <= 16'b0000_0000_0000_0000;
             else
                 counter_reg <= counter_reg + 1;
         end

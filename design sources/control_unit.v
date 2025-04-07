@@ -16,23 +16,31 @@
 
 
 `timescale 1ns / 1ps
-// For now, the ALU isn't being done cause I cannot fathom how that piece of code works.
-// Just gonna write a simple control signal, based on how the ALU works, this will be changed.
-module control_unit(clk, reset, ins_done, ins_count);
-    // just a flag so it's 1 bit.
-    input clk, reset, ins_done;
-    output wire ins_count;
 
-    reg _ins_count;
+
+module control_unit(clk, reset, input_flag, ins_done, increment_ins_count);
+    input [1:0] input_flag;
+    input clk, reset, ins_done;
+    output reg [1:0] output_flag;
+    output wire increment_ins_count;
+
+    reg _increment_ins_count;
 
     always @ (posedge clk or posedge reset) begin
         if (reset)
-            _ins_count <= 0;
+            _increment_ins_count <= 0;
         else if (ins_done)
-            _ins_count <= 1;
-        else 
-            _ins_count <= 0;
+            _increment_ins_count <= 1;
+        else
+            _increment_ins_count <= 0;
+
+        case (input_flag)
+            2'b00: output_flag <= 2'b00;
+            2'b01: output_flag <= 2'b01;
+            2'b10: output_flag <= 2'b10;
+            2'b11: output_flag <= 2'b11;
+        endcase
     end
 
-    assign ins_count = _ins_count;
+    assign increment_ins_count = _increment_ins_count;
 endmodule

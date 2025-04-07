@@ -24,6 +24,7 @@
 module instruction_decoder(instruction, clk, reset, opcode, reg_a, reg_b, reg_c, reg_d, imm_value);
     input clk, reset;
     input [15:0] instruction;
+    output reg [1:0] control_unit_input_flag;
     output reg [3:0] opcode, imm_value; // imm_value == immediate value
 
     // I'm such a big dimwit, I've mentioned that my regs would be 2 bits and i've initially initialised them as 4 bits.
@@ -37,6 +38,7 @@ module instruction_decoder(instruction, clk, reset, opcode, reg_a, reg_b, reg_c,
             reg_c <= 2'b00;
             reg_d <= 2'b00;
             imm_value <= 4'b0000;
+            control_unit_input_flag <= 2'b00;
         end
         else begin
             opcode <= instruction[15:12];
@@ -47,5 +49,13 @@ module instruction_decoder(instruction, clk, reset, opcode, reg_a, reg_b, reg_c,
             imm_value <= instruction[3:0];
             $display("%b", opcode);
         end
+
+        // these are flags for operations mentioned below
+        case (opcode)
+            4'b1000: control_unit_input_flag <= 2'b00; // STOREI
+            4'b1001: control_unit_input_flag <= 2'b01; // JUMP
+            4'b1010: control_unit_input_flag <= 2'b10; // DELETE
+            4'b1111: control_unit_input_flag <= 2'b11; // HALT
+        endcase
     end
 endmodule
