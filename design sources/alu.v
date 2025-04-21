@@ -26,7 +26,11 @@
 // - `1111`: HALT
 // as they're meant to be executed by the Control Unit
 
-module alu(clk, reset, operand_one, operand_two, _opcode, _imm_value, result);
+module alu(
+    clk, reset, alu_enable,
+    operand_one, operand_two,
+    _opcode, _imm_value, result
+);
     input clk, reset;
     input [3:0] _opcode, _imm_value;
     input [15:0] operand_one, operand_two;
@@ -35,7 +39,7 @@ module alu(clk, reset, operand_one, operand_two, _opcode, _imm_value, result);
     always @ (posedge clk or posedge reset) begin
         if (reset)
             result <= 16'b0000_0000_0000_0000;
-        else begin
+        else if (alu_enable) begin
             case (_opcode)
                 4'b0000: result <= operand_one + operand_two; // ADD
                 4'b0001: result <= operand_one + _imm_value; // ADDI

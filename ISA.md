@@ -8,32 +8,32 @@ So instead of having a definite IS Format: `0000 00 00 00 00 0000`, this would k
 For this the entire ISA has to be designed.
 
 1. `ADD`:
-    - 0000 | 00 | 00 | 00 | 00 | xxxx
+    - 0000 | 00 | 00 | 00 | xxxxxx
     - opcode | store_at | operand_one | operand_two | dont-care values
 2. `ADDI`:
     - 0001 | 00 | 0000000000
     - opcode | store_at | 10-bit immediate value
 3. `SUB`:
-    - 0010 | 00 | 00 | 00 | 00 | xxxx
+    - 0000 | 00 | 00 | 00 | xxxxxx
     - opcode | store_at | operand_one | operand_two | dont-care values
 4. `SUBI`:
     - 0011 | 00 | 0000000000
     - opcode | store_at | 10-bit immediate value
 5. `MUL`:
-    - 0100 | 00 | 00 | 00 | 00 | xxxx
+    - 0000 | 00 | 00 | 00 | xxxxxx
     - opcode | store_at | operand_one | operand_two | dont-care values
 6. `MULI`:
     - 0101 | 00 | 0000000000
     - opcode | store_at | 10-bit immediate value
 7. `DIV`:
-    - 0110 | 00 | 00 | 00 | 00 | xxxx
+    - 0000 | 00 | 00 | 00 | xxxxxx
     - opcode | store_at | operand_one | operand_two | dont-care values
 8. `DIVI`:
     - 0111 | 00 | 0000000000
     - opcode | store_at | 10-bit immediate value
 9. `STOREI`:
     - 1000 | 00 | 00000000
-    - opcode | destination_register | 10-bit immediate value
+    - opcode | destination_register | 8-bit immediate value
 10. `JUMP`:
     - 1001 | 000000000000 |
     - opcode | jump_to_12_bit_address for now

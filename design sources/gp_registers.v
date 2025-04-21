@@ -19,11 +19,11 @@
 
 
 module gp_registers (
-    write_enable, clk, reset, select_reg, alu_result,
+    write_enable, write_done, clk, reset, store_at, alu_result, opcode,
     reg_a_out, reg_b_out, reg_c_out, reg_d_out
 );
-    input write_enable, clk, reset;
-    input [1:0] select_reg;
+    input write_enable, write_done, clk, reset;
+    input [1:0] store_at;
     input [15:0] alu_result;
 
     reg [15:0] reg_a;
@@ -44,12 +44,15 @@ module gp_registers (
             reg_d <= 16'b0000_0000_0000_0000;
         end
         else if (write_enable) begin
-            case (select_reg)
+            case (store_at)
                 2'b00: reg_a <= alu_result;
                 2'b01: reg_b <= alu_result;
                 2'b10: reg_c <= alu_result;
                 2'b11: reg_d <= alu_result;
             endcase
+            write_done <= 1;
+        else
+            write_done <= 0;
         end
     end
 

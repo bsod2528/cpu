@@ -21,41 +21,120 @@
 // | 0000 | 00 | 00 | 00 | 00 | 0000 |
 // | opcode | reg a | reg b | reg c | reg d | immediate value |
 
-module instruction_decoder(instruction, clk, reset, opcode, reg_a, reg_b, reg_c, reg_d, imm_value);
+// Yeah so the above is generic split up, the format will change according to the `opcode`
+// Refer to `ISA.md` on root directory to see the split-up / IS format for each opcode.
+
+module instruction_decoder(
+    instruction, clk, reset,
+    opcode, operand_one, operand_two, store_at,
+    eight_bit_imm_val, ten_bit_imm_val,
+    control_unit_input_flag, reg_to_work_on, jump_address_input,
+    six_bit_dont_care, ten_bit_dont_care, twelve_bit_dont_care
+);
     input clk, reset;
     input [15:0] instruction;
-    output reg [1:0] control_unit_input_flag;
-    output reg [3:0] opcode, imm_value; // imm_value == immediate value
 
-    // I'm such a big dimwit, I've mentioned that my regs would be 2 bits and i've initially initialised them as 4 bits.
-    output reg [1:0] reg_a, reg_b, reg_c, reg_d;
+    output reg [1:0] reg_to_work_on, operand_one, operand_two, store_at;
+    output reg [3:0] opcode;
+    output reg [5:0] six_bit_dont_care;
+    output reg [7:0] eight_bit_imm_val;
+    output reg [9:0] ten_bit_dont_care, ten_bit_imm_val;
+    output reg [11:0] twelve_bit_dont_care, jump_address_input;
 
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             opcode <= 4'b0000;
-            reg_a <= 2'b00;
-            reg_b <= 2'b00;
-            reg_c <= 2'b00;
-            reg_d <= 2'b00;
-            imm_value <= 4'b0000;
-            control_unit_input_flag <= 2'b00;
+            store_at <= 2'b00;
+            operand_one <= 2'b00;
+            operand_two <= 2'b00;
+            reg_to_work_on <= 2'b00;
+            six_bit_dont_care <= 6'b000_000;
+            eight_bit_imm_val <= 8'b0000_0000;
+            ten_bit_imm_val <= 10'b0000_0000_00;
+            ten_bit_dont_care <= 10'b0000_0000_00;
+            twelve_bit_dont_care <= 12'b0000_0000_0000;
+            jump_address_input <= 12'b0000_0000_0000;
         end
         else begin
             opcode <= instruction[15:12];
-            reg_a <= instruction[11:10];
-            reg_b <= instruction[9:8];
-            reg_c <= instruction[7:6];
-            reg_d <= instruction[5:4];
-            imm_value <= instruction[3:0];
-            $display("%b", opcode);
+            case (opcode)
+                4'b0000: begin // ADD
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b0001: begin // ADDI
+                    store_at <= instruction[11:10];
+                    ten_bit_imm_val <= instruction[9:0];
+                end
+                4'b0010: begin // SUB
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b0011: begin // SUBI
+                    store_at <= instruction[11:10];
+                    ten_bit_imm_val <= instruction[9:0];
+                end
+                4'b0100: begin // MUL
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b0101: begin // MULI
+                    store_at <= instruction[11:10];
+                    ten_bit_imm_val <= instruction[9:0];
+                end
+                4'b0110: begin // DIV
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b0111: begin // DIVI
+                    store_at <= instruction[11:10];
+                    ten_bit_imm_val <= instruction[9:0];
+                end
+                4'b1000: begin // STOREI
+                    reg_to_work_on <= instruction[9:8];
+                    eight_bit_imm_val <= instruction[7:0];
+                end
+                4'b1001: begin // JUMP
+                    jump_address_input <= instruction[11:0];
+                end
+                4'b1010: begin // DELETE
+                    reg_to_work_on <= instruction[11:10];
+                    ten_bit_dont_care <= instruction[9:0];
+                end
+                4'b1011: begin // AND
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b1100: begin // OR
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b1101: begin // NOT
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b1110: begin // XOR
+                    store_at <= instruction[11:10];
+                    operand_one <= instruction[9:8];
+                    operand_two <= instruction[7:6];
+                    six_bit_dont_care <= instruction[5:0];
+                end
+                4'b1111: twelve_bit_dont_care <= instruction[11:0]; // HALT
+            endcase
         end
-
-        // these are flags for operations mentioned below
-        case (opcode)
-            4'b1000: control_unit_input_flag <= 2'b00; // STOREI
-            4'b1001: control_unit_input_flag <= 2'b01; // JUMP
-            4'b1010: control_unit_input_flag <= 2'b10; // DELETE
-            4'b1111: control_unit_input_flag <= 2'b11; // HALT
-        endcase
     end
 endmodule
