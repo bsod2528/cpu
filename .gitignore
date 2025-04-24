@@ -1,2 +1,4 @@
 *.out
 *.vcd
+env/
+__pycache__/

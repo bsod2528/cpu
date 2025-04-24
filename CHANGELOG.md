@@ -18,6 +18,10 @@ All notable changes will be logged here.
 ## 19-03-2025
 ### Chore
 - Updated workflow for using `iverilog` and `gtkwave` cause life is easier now.
+
+## 24-04-2025
+### Added
+- Basic assembler has been created. Check out the `assembler/` in the root directory.
 ---
 
 ### Known Behavior
