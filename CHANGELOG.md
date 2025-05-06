@@ -22,6 +22,10 @@ All notable changes will be logged here.
 ## 24-04-2025
 ### Added
 - Basic assembler has been created. Check out the `assembler/` in the root directory.
+
+## 06-05-2025
+### Updated
+- The assembler now sends out errors like a real compiler. It's pretty petty but yeah. It's not a CLI tool yet but uh yeah. Soon.
 ---
 
 ### Known Behavior

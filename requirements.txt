@@ -1,7 +1,16 @@
+autopep8==2.3.2
 black==25.1.0
 click==8.1.8
 colorama==0.4.6
+markdown-it-py==3.0.0
+mdurl==0.1.2
 mypy_extensions==1.1.0
 packaging==25.0
 pathspec==0.12.1
 platformdirs==4.3.7
+pycodestyle==2.13.0
+Pygments==2.19.1
+rich==14.0.0
+shellingham==1.5.4
+typer==0.15.3
+typing_extensions==4.13.2

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
+from baseclass import RegisterNotPresent
+
 ARITHMETIC_OPCODES: dict[str, str] = {
     "add": "0000",
     "addi": "0001",
@@ -35,7 +37,7 @@ LOGICAL_OPCODES: dict[str, str] = {
 REGISTER_VALUES: dict[str, str] = {"r0": "00", "r1": "01", "r2": "10", "r3": "11"}
 
 
-def decode_register(register: str) -> str:
+def decode_register(register: str, line: int) -> str:
     """
     Converts register names into 2-bit string binary.
 
@@ -43,13 +45,18 @@ def decode_register(register: str) -> str:
     ----------
     register: str
         The value, either r0, r1, r2, or r3 from the input `.asm`.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
     str:
         Version of the register which can be stored in `.mem`.
     """
-    return REGISTER_VALUES[register.strip(",")]
+    if register not in REGISTER_VALUES:
+        raise RegisterNotPresent(register, line)
+    else:
+        return REGISTER_VALUES[register]
 
 
 def get_arithmetic_opcode(opcode: str) -> str:
@@ -88,7 +95,7 @@ def get_logic_opcode(opcode: str) -> str:
     return LOGICAL_OPCODES[opcode]
 
 
-def extract_arithmetic(instruction: list[str]) -> str:
+def extract_arithmetic(instruction: list[str], line: str) -> str:
     """
     Converts given instruction into 16-bit binary for *non-immediate value* arithmetic operations.
 
@@ -96,6 +103,8 @@ def extract_arithmetic(instruction: list[str]) -> str:
     ----------
     instruction: list[str]
         Current arithmetic instruction in the `VR16-ASM` format.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
@@ -103,18 +112,19 @@ def extract_arithmetic(instruction: list[str]) -> str:
         16-bit binary string representation of the given arithmetic instruction.
     """
     try:
-        opcode: str = get_arithmetic_opcode(instruction[0])
-        store_at: str = decode_register(instruction[1])
-        operand_one: str = decode_register(instruction[2])
-        operand_two: str = decode_register(instruction[3])
+        opcode: str = get_arithmetic_opcode(instruction[4])
+        store_at: str = decode_register(instruction[5].strip(","), line)
+        operand_one: str = decode_register(instruction[6].strip(","), line)
+        operand_two: str = decode_register(instruction[7], line)
 
         return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
     except Exception as error:
         print(error)
 
 
-# TODO: Raise error when the immediate value provided is more than 1023 (in decimal)
-def extract_immediate_arithmetic(instruction: list[str]) -> str:
+# TODO: Raise error when the immediate value provided is more than 1023
+# (in decimal)
+def extract_immediate_arithmetic(instruction: list[str], line: int) -> str:
     """
     Converts given instruction into 16-bit binary for *immediate value* arithmetic operations.
 
@@ -122,6 +132,8 @@ def extract_immediate_arithmetic(instruction: list[str]) -> str:
     ----------
     instruction: list[str]
         Current arithmetic instruction in the `VR16-ASM` format.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
@@ -129,9 +141,9 @@ def extract_immediate_arithmetic(instruction: list[str]) -> str:
         16-bit binary string representation of the given arithmetic instruction.
     """
     try:
-        opcode: str = get_arithmetic_opcode(instruction[0])
-        store_at: str = decode_register(instruction[1])
-        temp: int = int(instruction[2])
+        opcode: str = get_arithmetic_opcode(instruction[4])
+        store_at: str = decode_register(instruction[5].strip(","), line)
+        temp: int = int(instruction[6])
         temp: str = f"{temp:b}"
         immediate_value: str = f"{temp.zfill(16 - 4 - 2)}"
 
@@ -140,7 +152,7 @@ def extract_immediate_arithmetic(instruction: list[str]) -> str:
         print(error)
 
 
-def extract_logic_main(instruction: list[str]) -> str:
+def extract_logic_main(instruction: list[str], line: int) -> str:
     """
     Converts given instruction into 16-bit binary for *2-operand* logical operations.
 
@@ -148,6 +160,8 @@ def extract_logic_main(instruction: list[str]) -> str:
     ----------
     instruction: list[str]
         Current logical instruction in the `VR16-ASM` format.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
@@ -155,10 +169,10 @@ def extract_logic_main(instruction: list[str]) -> str:
         16-bit binary string representation of the given logical instruction.
     """
     try:
-        opcode: str = get_logic_opcode(instruction[0])
-        store_at: str = decode_register(instruction[1])
-        operand_one: str = decode_register(instruction[2])
-        operand_two: str = decode_register(instruction[3])
+        opcode: str = get_logic_opcode(instruction[4])
+        store_at: str = decode_register(instruction[5].strip(","), line)
+        operand_one: str = decode_register(instruction[6].strip(","), line)
+        operand_two: str = decode_register(instruction[7], line)
 
         return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
     except Exception as error:
@@ -166,7 +180,7 @@ def extract_logic_main(instruction: list[str]) -> str:
 
 
 # Could've kept a better name, will change once my mind strikes with one.
-def extract_logic_side(instruction: list[str]) -> str:
+def extract_logic_side(instruction: list[str], line: int) -> str:
     """
     Converts given instruction into 16-bit binary for *1-operand* logical operations.
 
@@ -174,6 +188,8 @@ def extract_logic_side(instruction: list[str]) -> str:
     ----------
     instruction: list[str]
         Current logical instruction in the `VR16-ASM` format.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
@@ -181,9 +197,9 @@ def extract_logic_side(instruction: list[str]) -> str:
         16-bit binary string representation of the given logical instruction.
     """
     try:
-        opcode: str = get_logic_opcode(instruction[0])
-        store_at: str = decode_register(instruction[1])
-        operand_one: str = decode_register(instruction[2])
+        opcode: str = get_logic_opcode(instruction[4])
+        store_at: str = decode_register(instruction[5].strip(","), line)
+        operand_one: str = decode_register(instruction[6].strip(","), line)
 
         return f"{opcode}{store_at}{operand_one}xxxxxxxx"
     except Exception as error:
@@ -197,7 +213,7 @@ def extract_jump(instruction: list[str]) -> None:
     return None
 
 
-def extract_delete(instruction: list[str]) -> str:
+def extract_delete(instruction: list[str], line: int) -> str:
     """
     Converts given instruction into 16-bit binary for deletion of data from a register..
 
@@ -205,6 +221,8 @@ def extract_delete(instruction: list[str]) -> str:
     ----------
     instruction: list[str]
         Current instruction in the `VR16-ASM` format.
+    line: int
+        Line number from the source file in which this current instruction is present.
 
     Returns:
     --------
@@ -212,7 +230,7 @@ def extract_delete(instruction: list[str]) -> str:
         16-bit binary string representation of the given delete instruction.
     """
     try:
-        destination_register: str = decode_register(instruction[1])
+        destination_register: str = decode_register(instruction[5], line)
 
         return f"1010{destination_register}xxxxxxxxxx"
     except Exception as error:

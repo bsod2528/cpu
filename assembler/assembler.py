@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
+import typer
+from colorama import Fore, Back, Style
+
+from baseclass import OpcodeNotPresent
 
 from extractor import (
     extract_arithmetic,
@@ -26,21 +30,23 @@ from extractor import (
 )
 
 
-with open("../asm source files/add.asm") as source:
+with open("../asm source files/not_gate.asm") as source:
     lines: list[str] = []
 
     for line in source:
         lines.append(line.strip("\n"))
 
 # This is to "clear" the file so that everything gets appended later on.
-# This file hasn't been git-ignored as you can see the "latest" mem file based on given input asm.
+# This file hasn't been git-ignored as you can see the "latest" mem file
+# based on given input asm.
 with open("../memory files/write_imem.mem", "w") as imem_to_clear:
     imem_to_clear.write("")
 
 
 total_lines: int = len(lines)
+start_present: bool = False
 list_index: int = 0
-
+result: str = ""
 
 # As of date 23-04-25, it struck my mind that I have "duplicate" instructions.
 # `storei`: adds immediate value into a register, for some bizzare reason I've kept it as 8-bit.
@@ -48,7 +54,7 @@ list_index: int = 0
 # I'll change the ISA later on but uhh yeah :moyai:
 
 
-def choose_extractor(opcode: str, instruction: list[str]) -> str | None:
+def choose_extractor(opcode: str, instruction: list[str], line: int) -> str | None:
     """
     Based on opcode, extraction is done.
 
@@ -59,44 +65,70 @@ def choose_extractor(opcode: str, instruction: list[str]) -> str | None:
     instruction: list[str]
         Current instruction in the `VR16-ASM` format which has to be passed on to the
         extractor.
+    line: int
+        Line number from the source file in which this current instruction is present.
+
+    Returns:
+    --------
+    str:
+        Output of the extractor function chosen which is essentially a string representation
+        of the binary machine code.
     """
     if opcode in ["add", "sub", "mul", "div"]:
-        return extract_arithmetic(instruction)
+        return extract_arithmetic(instruction, line)
     if opcode in ["addi", "subi", "muli", "divi"]:
-        return extract_immediate_arithmetic(instruction)
+        return extract_immediate_arithmetic(instruction, line)
     if opcode == "jump":
-        return extract_jump(instruction)
+        return extract_jump(instruction, line)
     if opcode == "delete":
-        return extract_delete(instruction)
+        return extract_delete(instruction, line)
     if opcode in ["and", "or", "xor"]:
-        return extract_logic_main(instruction)
+        return extract_logic_main(instruction, line)
     if opcode == "not":
-        return extract_logic_side(instruction)
+        return extract_logic_side(instruction, line)
     if opcode == "halt":
         return extract_halt(instruction)
 
-
-# TODO: Make the assembler bit better and change syntax of asm to:
-# ```asm
-# start;
-#   addi r0, 1;
-#   addi r2, 10;
-#   and r0, r0, r2;
-#   halt
-# end;
-# ```
-# Like a proper compiler / interpreter or however that works.
+    return None
 
 
 while list_index != total_lines:
     current_instruction = lines[list_index].strip(";").split(" ")
 
-    print(current_instruction)
+    print(
+        Fore.BLUE
+        + Style.BRIGHT
+        + "INFO"
+        + Style.RESET_ALL
+        + ": "
+        + f"{list_index} -> {current_instruction}"
+        + Style.RESET_ALL
+    )
 
-    result = choose_extractor(current_instruction[0], current_instruction)
-    print(f"--> {result}")
+    if current_instruction[0].startswith("--") or (current_instruction[0] == " "):
+        list_index = list_index + 1
+        continue
 
-    with open("../memory files/write_imem.mem", "a") as imem:
-        imem.write(f"{result}\n")
+    if current_instruction[0] == "start:":
+        list_index = list_index + 1
+        start_present = True
+        continue
+
+    if current_instruction[0] == "end:":
+        break
+
+    if start_present:
+        try:
+            opcode = current_instruction[4]
+            result = choose_extractor(opcode, current_instruction, list_index + 1)
+
+            if result is None:
+                raise OpcodeNotPresent(opcode, list_index + 1)
+
+            with open("../memory files/write_imem.mem", "a") as imem:
+                imem.write(f"{result}\n")
+        except OpcodeNotPresent as error:
+            print(error)
+            break
 
     list_index = list_index + 1
