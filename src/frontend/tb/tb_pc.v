@@ -35,6 +35,9 @@ module tb_pc();
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_pc);
+
         clk = 0;
         reset = 1;
         jump_enable = 0;

@@ -19,15 +19,16 @@
 
 // I've been spamming can you hear the music while doing this HAHA.
 module program_counter(
-    clk, reset,
-    ins_count, flag_input,
-    counter_reg, jump_enable, jump_address, return_enable,
-);
-    input ins_count, jump_enable, return_enable, clk, reset;
-    input [1:0] flag_input;
-    input [15:0] jump_address;
-    output reg [15:0] counter_reg;
+    input clk,
+    input reset,
+    input ins_count,
+    input jump_enable,
+    input return_enable,
+    input [1:0] flag_input,
+    input [15:0] jump_address,
 
+    output reg [15:0] counter_reg
+);
     reg [15:0] temp_address;
 
     always @ (posedge clk or posedge reset) begin

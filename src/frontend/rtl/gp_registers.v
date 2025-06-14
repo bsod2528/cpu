@@ -19,22 +19,22 @@
 
 
 module gp_registers (
-    write_enable, write_done, clk, reset, store_at, alu_result, opcode,
-    reg_a_out, reg_b_out, reg_c_out, reg_d_out
-);
-    input write_enable, write_done, clk, reset;
-    input [1:0] store_at;
-    input [15:0] alu_result;
+    input clk,
+    input reset,
+    input write_done,
+    input write_enable,
+    input [1:0] store_at,
+    input [15:0] alu_result,
 
+    output [15:0] reg_a_out,
+    output [15:0] reg_b_out,
+    output [15:0] reg_c_out,
+    output [15:0] reg_d_out    
+);
     reg [15:0] reg_a;
     reg [15:0] reg_b;
     reg [15:0] reg_c;
     reg [15:0] reg_d;
-
-    output [15:0] reg_a_out;
-    output [15:0] reg_b_out;
-    output [15:0] reg_c_out;
-    output [15:0] reg_d_out;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin

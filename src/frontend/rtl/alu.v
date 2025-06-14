@@ -27,15 +27,16 @@
 // as they're meant to be executed by the Control Unit
 
 module alu(
-    clk, reset, alu_enable,
-    operand_one, operand_two,
-    _opcode, _imm_value, result
-);
-    input clk, reset;
-    input [3:0] _opcode, _imm_value;
-    input [15:0] operand_one, operand_two;
-    output reg [15:0] result;
+    input clk, 
+    input reset,
+    input alu_enable,
+    input [3:0] _opcode, 
+    input [3:0] _imm_value,
+    input [3:0] operand_one, 
+    input [3:0] operand_two,
 
+    output reg [15:0] result
+);
     always @ (posedge clk or posedge reset) begin
         if (reset)
             result <= 16'b0000_0000_0000_0000;

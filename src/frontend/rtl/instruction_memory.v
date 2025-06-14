@@ -22,16 +22,20 @@
 // Have to mention the inspiration for this: https://www.edaplayground.com/x/iCVx
 // Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
 
-module instruction_memory(clk, reset, address, enable, instruction);
-    input clk, reset, enable;
-    input [15:0] address;
-    output reg [15:0] instruction;
+module instruction_memory(
+    input clk,
+    input reset,
+    input enable,
 
+    input [15:0] address,
+    
+    output reg [15:0] instruction
+);
     reg [15:0] imem [0:255]; // just 256 instructions for now which will.
 
     initial begin
         instruction = 16'b0000_0000_0000_0000;
-        $readmemb("memory files/imem.mem", imem, 0, 9);
+        $readmemb("mem/imem.mem", imem, 0, 9);
     end
 
     always @ (posedge clk or reset) begin

@@ -25,22 +25,22 @@
 // Refer to `ISA.md` on root directory to see the split-up / IS format for each opcode.
 
 module instruction_decoder(
-    instruction, clk, reset,
-    opcode, operand_one, operand_two, store_at,
-    eight_bit_imm_val, ten_bit_imm_val,
-    control_unit_input_flag, reg_to_work_on, jump_address_input,
-    six_bit_dont_care, ten_bit_dont_care, twelve_bit_dont_care
+    input clk, 
+    input reset,
+    input [15:0] instruction,
+
+    output reg [1:0] operand_one,
+    output reg [1:0] operand_two,
+    output reg [1:0] store_at,
+    output reg [1:0] reg_to_work_on,
+    output reg [3:0] opcode,
+    output reg [5:0] six_bit_dont_care,
+    output reg [7:0] eight_bit_imm_val,
+    output reg [9:0] ten_bit_dont_care,
+    output reg [9:0] ten_bit_imm_val,
+    output reg [11:0] twelve_bit_dont_care,
+    output reg [11:0] jump_address_input
 );
-    input clk, reset;
-    input [15:0] instruction;
-
-    output reg [1:0] reg_to_work_on, operand_one, operand_two, store_at;
-    output reg [3:0] opcode;
-    output reg [5:0] six_bit_dont_care;
-    output reg [7:0] eight_bit_imm_val;
-    output reg [9:0] ten_bit_dont_care, ten_bit_imm_val;
-    output reg [11:0] twelve_bit_dont_care, jump_address_input;
-
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             opcode <= 4'b0000;

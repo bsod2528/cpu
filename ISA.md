@@ -1,11 +1,9 @@
-# VR16-ISA v0.1.1
+# VR16-ISA alpha
 
-THIS IS SUBJECT TO CHANGE, I'M EXPERIMENTING ENTIRELY.
+> [!IMPORTANT]
+> The entire architecture is subject to change.
 
-# Working for this
-So instead of having a definite IS Format: `0000 00 00 00 00 0000`, this would keep changing based on the opcode mentioned.
-
-For this the entire ISA has to be designed.
+Please don't mind my poor markdown skills.
 
 1. `ADD`:
     - 0000 | 00 | 00 | 00 | xxxxxx

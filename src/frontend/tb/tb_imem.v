@@ -53,6 +53,9 @@ module tb_imem();
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_imem);
+        
         clk = 0;
         reset = 1;
         jump_enable = 0;

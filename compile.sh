@@ -3,8 +3,7 @@
 clear
 
 iverilog -o output.out \
-    'design sources'/program_counter.v \
-    'design sources'/instruction_memory.v \
-    'design sources'/instruction_decoder.v \
-    'design sources'/control_unit.v \
-    'design sources'/alu.v
+    'src/frontend/rtl'/program_counter.v \
+    'src/frontend/rtl'/instruction_memory.v \
+    'src/frontend/rtl'/instruction_decoder.v \
+    'src/frontend/tb'/tb_imem.v
