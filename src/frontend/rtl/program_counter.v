@@ -14,37 +14,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 `timescale 1ns / 1ps
 
 // I've been spamming can you hear the music while doing this HAHA.
 module program_counter(
-    input clk,
-    input reset,
-    input ins_count,
-    input jump_enable,
-    input return_enable,
-    input [1:0] flag_input,
-    input [15:0] jump_address,
+    input wire clk,
+    input wire reset,
+    input wire increment,
+    input wire jump_enable,
+    input wire return_enable,
+    input wire flag_input, // for HALT
+    input wire [15:0] jump_address,
 
+    output reg jump_done,
     output reg [15:0] counter_reg
 );
     reg [15:0] temp_address;
 
     always @ (posedge clk or posedge reset) begin
-        if (reset)
+        if (reset) begin
+            jump_done <= 1'b0;
             counter_reg <= 16'b0000_0000_0000_0000;
-        else if (ins_count) begin
-            if (jump_enable) begin
-                temp_address <= counter_reg;
-                counter_reg <= jump_address;
-            end
-            else if (return_enable)
-                counter_reg <= temp_address;
-            else if (flag_input == 2'b11)
-                counter_reg <= 16'b0000_0000_0000_0000;
-            else
-                counter_reg <= counter_reg + 1;
         end
+
+        else if (increment)
+            counter_reg <= counter_reg + 1;
+
+        else if (jump_enable) begin
+            temp_address <= counter_reg;
+            counter_reg <= jump_address;
+            jump_done <= 1'b1;
+        end
+
+        else if (return_enable)
+            counter_reg <= temp_address;
+
+        else if (flag_input == 2'b11)
+            counter_reg <= 16'b0000_0000_0000_0000;
     end
 endmodule

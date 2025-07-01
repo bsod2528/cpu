@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 `timescale 1ns / 1ps
 
 // This testbench combines both the PC and the IMEM as it's a CPU.
@@ -30,7 +29,7 @@
 // How in the single handed wild bizzare brain, did that mad-lad design the 4004.
 
 module tb_imem();
-    reg jump_enable, return_enable, clk, reset, imem_enable;
+    reg jump_enable, return_enable, clk, reset, enable_imem;
     reg [15:0] jump_address;
     wire [15:0] counter_reg, instruction;
 
@@ -46,7 +45,7 @@ module tb_imem();
     instruction_memory dut_imem(
         .clk(clk),
         .address(counter_reg),
-        .enable(imem_enable),
+        .enable(enable_imem),
         .instruction(instruction)
     );
 
@@ -55,7 +54,7 @@ module tb_imem();
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, tb_imem);
-        
+
         clk = 0;
         reset = 1;
         jump_enable = 0;

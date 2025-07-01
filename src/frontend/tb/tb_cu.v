@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 // Just testing the control signal here, so no need to connect the gp registers for now.
 `timescale 1ns / 1ps
 

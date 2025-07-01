@@ -14,47 +14,47 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 `timescale 1ns / 1ps
 
 // It's happening ladies and gentlemen
-
-// These instructions will not work:
-// - `1000`: LOAD
-// - `1001`: JUMP
-// - `1010`: STORE
-// - `1111`: HALT
-// as they're meant to be executed by the Control Unit
-
 module alu(
-    input clk, 
-    input reset,
-    input alu_enable,
-    input [3:0] _opcode, 
-    input [3:0] _imm_value,
-    input [3:0] operand_one, 
-    input [3:0] operand_two,
+    input wire clk,
+    input wire reset,
+    input wire alu_enable,
+    input wire [3:0] opcode,
+    input wire [15:0] operand_one,
+    input wire [15:0] operand_two,
 
-    output reg [15:0] result
+    output reg [15:0] result,
+    output wire alu_done
 );
+
+    reg alu_done_reg;
+
     always @ (posedge clk or posedge reset) begin
         if (reset)
             result <= 16'b0000_0000_0000_0000;
         else if (alu_enable) begin
-            case (_opcode)
-                4'b0000: result <= operand_one + operand_two; // ADD
-                4'b0001: result <= operand_one + _imm_value; // ADDI
-                4'b0010: result <= operand_one - operand_two; // SUB
-                4'b0011: result <= operand_one - _imm_value; // SUBI
-                4'b0100: result <= operand_one * operand_two; // MUL
-                4'b0101: result <= operand_one * _imm_value; // MULI
-                4'b0110: result <= operand_one / operand_two; // DIV
-                4'b0111: result <= operand_one / _imm_value; // DIVI - good thing `immediate values` weren't named absolute values, otherwise this would've been DIVA *winks*. It's a joke.
-                4'b1011: result <= operand_one & operand_two; // AND
-                4'b1100: result <= operand_one | operand_two; // OR
-                4'b1101: result <= ~operand_one; // NOT
-                4'b1110: result <= operand_one ^ operand_two;
+            case (opcode)
+                4'b0000: result <= operand_one + operand_two;   // ADD
+                4'b0001: result <= operand_one + operand_two;   // ADDI
+                4'b0010: result <= operand_one - operand_two;   // SUB
+                4'b0011: result <= operand_one - operand_two;   // SUBI
+                4'b0100: result <= operand_one * operand_two;   // MUL
+                4'b0101: result <= operand_one * operand_two;   // MULI
+                4'b0110: result <= operand_one / operand_two;   // DIV
+                4'b0111: result <= operand_one / operand_two;   // DIVI - good thing `immediate values` weren't named absolute values, otherwise this would've been DIVA *winks*. It's a joke.
+                4'b1011: result <= operand_one & operand_two;   // AND
+                4'b1100: result <= operand_one | operand_two;   // OR
+                4'b1101: result <= ~operand_one;                // NOT
+                4'b1110: result <= operand_one ^ operand_two;   // XOR
+                default: result <= 16'b0000_0000_0000_0000;
             endcase
+            alu_done_reg <= 1'b1;
         end
+        else
+            alu_done_reg <= 1'b0;
     end
+
+    assign alu_done = alu_done_reg;
 endmodule

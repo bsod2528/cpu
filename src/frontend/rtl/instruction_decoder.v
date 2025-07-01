@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 `timescale 1ns / 1ps
 
 // Instruction bits be like:
@@ -24,22 +23,22 @@
 // Yeah so the above is generic split up, the format will change according to the `opcode`
 // Refer to `ISA.md` on root directory to see the split-up / IS format for each opcode.
 
+// MISC: It's 22-06-2025 as of me re-reading this, idk what i've done :skull:
 module instruction_decoder(
-    input clk, 
-    input reset,
-    input [15:0] instruction,
+    input wire clk,
+    input wire reset,
+    input wire [15:0] instruction,
 
     output reg [1:0] operand_one,
     output reg [1:0] operand_two,
     output reg [1:0] store_at,
     output reg [1:0] reg_to_work_on,
     output reg [3:0] opcode,
-    output reg [5:0] six_bit_dont_care,
-    output reg [7:0] eight_bit_imm_val,
-    output reg [9:0] ten_bit_dont_care,
-    output reg [9:0] ten_bit_imm_val,
-    output reg [11:0] twelve_bit_dont_care,
-    output reg [11:0] jump_address_input
+    output reg [15:0] imm_value,
+    output reg [15:0] six_bit_dont_care,    // idk im raw doggin
+    output reg [15:0] ten_bit_dont_care,
+    output reg [15:0] twelve_bit_dont_care,
+    output reg [15:0] jump_address_input
 );
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
@@ -49,8 +48,7 @@ module instruction_decoder(
             operand_two <= 2'b00;
             reg_to_work_on <= 2'b00;
             six_bit_dont_care <= 6'b000_000;
-            eight_bit_imm_val <= 8'b0000_0000;
-            ten_bit_imm_val <= 10'b0000_0000_00;
+            imm_value <= 16'b0000_0000_0000_0000;
             ten_bit_dont_care <= 10'b0000_0000_00;
             twelve_bit_dont_care <= 12'b0000_0000_0000;
             jump_address_input <= 12'b0000_0000_0000;
@@ -66,7 +64,7 @@ module instruction_decoder(
                 end
                 4'b0001: begin // ADDI
                     store_at <= instruction[11:10];
-                    ten_bit_imm_val <= instruction[9:0];
+                    imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0010: begin // SUB
                     store_at <= instruction[11:10];
@@ -76,7 +74,7 @@ module instruction_decoder(
                 end
                 4'b0011: begin // SUBI
                     store_at <= instruction[11:10];
-                    ten_bit_imm_val <= instruction[9:0];
+                    imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0100: begin // MUL
                     store_at <= instruction[11:10];
@@ -86,7 +84,7 @@ module instruction_decoder(
                 end
                 4'b0101: begin // MULI
                     store_at <= instruction[11:10];
-                    ten_bit_imm_val <= instruction[9:0];
+                    imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0110: begin // DIV
                     store_at <= instruction[11:10];
@@ -96,11 +94,11 @@ module instruction_decoder(
                 end
                 4'b0111: begin // DIVI
                     store_at <= instruction[11:10];
-                    ten_bit_imm_val <= instruction[9:0];
+                    imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b1000: begin // STOREI
                     reg_to_work_on <= instruction[9:8];
-                    eight_bit_imm_val <= instruction[7:0];
+                    imm_value <= {8'b0000_0000, instruction[7:0]};
                 end
                 4'b1001: begin // JUMP
                     jump_address_input <= instruction[11:0];

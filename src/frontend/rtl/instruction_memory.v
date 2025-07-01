@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 `timescale 1ns / 1ps
 
 // Instruction memory, it stores all the instructions that I set. Basically my actual instruction-set for what I'm creating.
@@ -23,9 +22,9 @@
 // Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
 
 module instruction_memory(
-    input clk,
-    input reset,
-    input enable,
+    input wire clk,
+    input wire reset,
+    input wire enable,
 
     input [15:0] address,
     
@@ -38,7 +37,7 @@ module instruction_memory(
         $readmemb("mem/imem.mem", imem, 0, 9);
     end
 
-    always @ (posedge clk or reset) begin
+    always @ (posedge clk or posedge reset) begin
         $display("AT: %t", $time);
         if (reset)
             instruction <= 16'b0000_0000_0000_0000;

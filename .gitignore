@@ -2,3 +2,4 @@
 *.vcd
 env
 __pycache__
+imem.mem
