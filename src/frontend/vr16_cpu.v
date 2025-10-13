@@ -161,7 +161,7 @@ module vr16_cpu(
         .clk(global_clk),
         .reset(global_reset),
         .write_enable(cu_enable_reg_write_op),
-        .store_at(id_store_at_op),
+        .store_at(cu_reg_write_address_op),
         .read_operand_one_reg(cu_reg_read_address_one_op),
         .read_operand_two_reg(cu_reg_read_address_two_op),
         .alu_result(a_result_op),

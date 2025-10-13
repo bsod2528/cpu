@@ -27,6 +27,24 @@ On how to run this project in your local machine.
 2. Setup venv in root directory.
 3. Run `./compile.sh` and then `./sim.sh` to view the rtl waveforms.
 
+# Road-Map
+- [ ] finish basic cpu
+- [ ] pipeline it
+- [ ] finish physical design
+
+As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
+
+# Basic docs for VRASM and VRSCRIPT
+## VRASM
+1. Actual `programs` start generating machine code by starting the code with `start:`, similary to stop generating machine code use `end:`.
+2. Comments can be made using `--`.
+3. For program syntax, kindly refer [isa.md](./ISA.md)
+
+## VRSCRIPT
+1. Variables: `<var_name> = <int>
+2. All instructions are accessed by calling respective functions: `<instruction>(<arg>, [arg])
+3. Iterative loops will be coming soon.
+
 # Licensing
 There are three parts to this CPU:
 - frontend
@@ -36,6 +54,3 @@ There are three parts to this CPU:
 1. Frontend deals with the synthesizable code written in verilog, the rtl and the corresponding testbenches, which are licensed under `GPLv3`. 
 2. Backend (will start soon) deals with the actual physical design of the cpu, which will be licensed under the `CERN-OHL-S`.
 3. Toolchain deals with the software side of the project, the `assembler/` and `compiler/` which makes programming on the CPU, which also come under `GPLv3`. 
-
-# ROADMAP
-# EXAMPLES FOR VRSCRIPT AND VRASM

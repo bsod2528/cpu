@@ -104,8 +104,8 @@ module control_unit(
                     4'b0000, 4'b0010, 4'b0100, 4'b0110, 4'b1011, 4'b1100, 4'b1101, 4'b1110: begin
                         enable_alu = 1'b1;
                         select_operation = 2'b00;
-                        // if (alu_done)
-                        //     next_state = WRITE;
+                        if (alu_done)
+                            next_state = WRITE;
                         next_state = WRITE;
                     end
 
@@ -113,8 +113,8 @@ module control_unit(
                     4'b0001, 4'b0011, 4'b0101, 4'b0111: begin
                         enable_alu = 1'b1;
                         select_operation = 2'b01;
-                        // if (alu_done)
-                        //     next_state = WRITE;
+                        if (alu_done)
+                            next_state = WRITE;
                         next_state = WRITE;
                     end
 
@@ -130,10 +130,10 @@ module control_unit(
                 enable_reg_write = 1'b1;
                 next_state = FETCH;
                 enable_pc_increment = 1'b1;
-                // if (reg_write_done) begin
-                //     next_state = FETCH;
-                //     enable_pc_increment = 1'b1;
-                // end
+                if (reg_write_done) begin
+                    next_state = FETCH;
+                    enable_pc_increment = 1'b1;
+                end
             end
 
             JUMP: begin

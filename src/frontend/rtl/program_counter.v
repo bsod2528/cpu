@@ -49,7 +49,7 @@ module program_counter(
         else if (return_enable)
             counter_reg <= temp_address;
 
-        else if (flag_input == 2'b11)
+        else if (flag_input)
             counter_reg <= 16'b0000_0000_0000_0000;
     end
 endmodule

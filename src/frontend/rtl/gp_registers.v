@@ -72,11 +72,11 @@ module gp_registers(
                 2'b10: reg_c <= alu_result;
                 2'b11: reg_d <= alu_result;
             endcase
-            write_done_reg = 1'b1;
+            write_done_reg <= 1'b1;
         end
 
         else
-            write_done_reg = 1'b0;
+            write_done_reg <= 1'b0;
     end
 
     assign reg_a_out = reg_a;
