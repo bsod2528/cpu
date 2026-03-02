@@ -224,11 +224,30 @@ def extract_logic_side(instruction: ParsedInstruction) -> str:
     return f"{opcode}{store_at}{operand_one}xxxxxxxx"
 
 
-def extract_jump(instruction: ParsedInstruction) -> None:
+def extract_jump(instruction: ParsedInstruction) -> str:
     """
-    This hasn't been done, as there is a logical dilemma going in my head regarding the working of this.
+    Converts given instruction into 16-bit binary for jump operations.
+
+    Arguments:
+    ----------
+    instruction: ParsedInstruction
+        Current instruction in the `VR16-ASM` format.
+
+    Returns:
+    --------
+    str:
+        16-bit binary string representation of the given jump instruction.
     """
-    return None
+    operands: list[str] = _validate_operand_count(instruction, 1)
+
+    jump_address: int = int(operands[0])
+    if jump_address < 0 or jump_address > 4095:
+        raise ValueError(
+            f"Jump address out of range at line {instruction.line_number}: {jump_address}. Expected 0 to 4095."
+        )
+
+    jump_address_bits: str = format(jump_address, "012b")
+    return f"1001{jump_address_bits}"
 
 
 def extract_delete(instruction: ParsedInstruction) -> str:
