@@ -39,12 +39,13 @@ from extractor import (
 
 
 def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction | None:
-    trimmed_line: str = raw_line.strip()
+    line_without_comment: str = raw_line.split("--", 1)[0]
+    trimmed_line: str = line_without_comment.strip()
     if not trimmed_line:
         return None
 
     tokens: list[str] = trimmed_line.strip(";").split()
-    if not tokens or tokens[0].startswith("--"):
+    if not tokens:
         return None
 
     if tokens[0] in ["start:", "end:"]:
