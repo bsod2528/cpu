@@ -287,4 +287,4 @@ def extract_halt(instruction: ParsedInstruction) -> str:
         16-bit binary string representation of the given halt instruction.
     """
     _validate_operand_count(instruction, 0)
-    return f"1111000000000000"
+    return "1111000000000000"

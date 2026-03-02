@@ -4,7 +4,39 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python linting tools
+        run: pip install ruff black
+
+      - name: Lint Python (ruff)
+        run: ruff check .
+
+      - name: Format check Python (black)
+        run: black --check .
+
+      - name: Lint shell scripts (shellcheck)
+        run: shellcheck compile.sh sim.sh
+
+      - name: Install Verilator
+        run: pip install verilator
+
+      - name: Lint Verilog RTL (verilator)
+        run: |
+          for f in src/frontend/rtl/*.v src/frontend/rtl/*.sv; do
+            echo "Linting $f"
+            verilator-cli --lint-only "$f"
+          done
+
   test:
     runs-on: ubuntu-latest
 

@@ -4,7 +4,6 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 ASSEMBLER_DIR = ROOT_DIR / "src" / "assembler"
 ASSEMBLER_SCRIPT = ASSEMBLER_DIR / "assembler.py"
@@ -42,7 +41,9 @@ def test_jump_rejects_out_of_range_immediate() -> None:
     code = """start:\njump 4096\nend:\n"""
     rc, stdout, stderr, mem = run_assembler(code)
 
-    assert rc == 0, f"assembler invocation failed unexpectedly: stdout={stdout}\nstderr={stderr}"
+    assert (
+        rc == 0
+    ), f"assembler invocation failed unexpectedly: stdout={stdout}\nstderr={stderr}"
     assert "Jump address out of range" in stdout
     assert mem.strip() == ""
 
