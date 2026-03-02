@@ -64,6 +64,7 @@ module gp_registers(
             reg_d <= 16'b0000_0000_0000_0000;
             operand_one_reg <= 16'b0000_0000_0000_0000;
             operand_two_reg <= 16'b0000_0000_0000_0000;
+            write_done_reg <= 1'b0;
         end
 
         else if (write_enable) begin
