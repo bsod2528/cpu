@@ -103,7 +103,13 @@ For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encod
 - 16-bit instruction: `0111 11 0000000110`
 - After: `R3 = 5`
 
-9. DONT KNOW WHAT TO DO HERE
+9. `STOREI`:
+```md
+1000 | xx | 00 | 00000000
+opcode | dont-care | reg_to_store_in | 8-bit immediate value
+```
+> [!NOTE]
+> `STOREI` is decoded by the instruction decoder (opcode `1000`) but is **not yet implemented** in the control unit or assembler. It stores an 8-bit immediate directly into a register. Since `ADDI` covers the same use-case with a 10-bit immediate in accumulator style, `STOREI` may be removed or repurposed in a future ISA revision.
 
 10. `JUMP`:
 ```md
