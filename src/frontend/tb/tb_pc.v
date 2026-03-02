@@ -57,6 +57,13 @@ module tb_pc;
         end
 
         jump_enable = 1'b0;
+        @(posedge clk);
+        #1;
+        if (jump_done !== 1'b0) begin
+            $display("[FAIL] jump_done should clear after jump, got %b", jump_done);
+            $fatal(1);
+        end
+
         return_enable = 1'b1;
         @(posedge clk);
         #1;
