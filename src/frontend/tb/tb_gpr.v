@@ -46,6 +46,11 @@ module tb_gpr;
         alu_result = 16'h0000;
 
         @(posedge clk);
+        #1;
+        if (write_done !== 1'b0) begin
+            $display("[FAIL] GPR reset write_done not cleared write_done=%b", write_done);
+            $fatal(1);
+        end
         reset = 1'b0;
 
         // Write r0.
