@@ -44,6 +44,6 @@ module instruction_memory #(
         if (reset)
             instruction <= 16'b0000_0000_0000_0000;
         else if (enable)
-            instruction <= imem[address];
+            instruction <= imem[address[7:0]];
     end
 endmodule

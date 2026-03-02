@@ -131,6 +131,9 @@ module control_unit(
 
                     // halt
                     4'b1111: next_state = HALT;
+
+                    // unimplemented opcodes: treat as no-op and advance
+                    default: next_state = FETCH;
                 endcase
             end
 
@@ -157,6 +160,8 @@ module control_unit(
             end
 
             HALT: next_state = HALT;
+
+            default: next_state = HALT;
         endcase
 
         operand_two_out = (select_operation == 2'b01 || select_operation == 2'b10) ? immediate_value: 16'h0000;

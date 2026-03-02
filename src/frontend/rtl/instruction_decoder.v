@@ -48,11 +48,11 @@ module instruction_decoder(
             operand_one = 2'b00;
             operand_two = 2'b00;
             reg_to_work_on = 2'b00;
-            six_bit_dont_care = 6'b000_000;
+            six_bit_dont_care = 16'h0000;
             imm_value = 16'b0000_0000_0000_0000;
-            ten_bit_dont_care = 10'b0000_0000_00;
-            twelve_bit_dont_care = 12'b0000_0000_0000;
-            jump_address_input = 12'b0000_0000_0000;
+            ten_bit_dont_care = 16'h0000;
+            twelve_bit_dont_care = 16'h0000;
+            jump_address_input = 16'h0000;
         end
         else begin
 
@@ -73,7 +73,7 @@ module instruction_decoder(
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b0001: begin // ADDI
                     store_at = instruction[11:10];
@@ -85,7 +85,7 @@ module instruction_decoder(
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b0011: begin // SUBI
                     store_at = instruction[11:10];
@@ -97,7 +97,7 @@ module instruction_decoder(
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b0101: begin // MULI
                     store_at = instruction[11:10];
@@ -109,7 +109,7 @@ module instruction_decoder(
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b0111: begin // DIVI
                     store_at = instruction[11:10];
@@ -122,37 +122,37 @@ module instruction_decoder(
                     imm_value = {8'b0000_0000, instruction[7:0]};
                 end
                 4'b1001: begin // JUMP
-                    jump_address_input = instruction[11:0];
+                    jump_address_input = {4'b0, instruction[11:0]};
                 end
                 4'b1010: begin // DELETE
                     reg_to_work_on = instruction[11:10];
-                    ten_bit_dont_care = instruction[9:0];
+                    ten_bit_dont_care = {6'b0, instruction[9:0]};
                 end
                 4'b1011: begin // AND
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b1100: begin // OR
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b1101: begin // NOT
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
                 4'b1110: begin // XOR
                     store_at = instruction[11:10];
                     operand_one = instruction[9:8];
                     operand_two = instruction[7:6];
-                    six_bit_dont_care = instruction[5:0];
+                    six_bit_dont_care = {10'b0, instruction[5:0]};
                 end
-                4'b1111: twelve_bit_dont_care = instruction[11:0]; // HALT
+                4'b1111: twelve_bit_dont_care = {4'b0, instruction[11:0]}; // HALT
             endcase
         end
     end

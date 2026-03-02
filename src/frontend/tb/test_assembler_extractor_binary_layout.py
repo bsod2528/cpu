@@ -6,7 +6,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 ASSEMBLER_DIR = ROOT_DIR / "src" / "assembler"
 ASSEMBLER_SCRIPT = ASSEMBLER_DIR / "assembler.py"
@@ -82,13 +81,14 @@ end:
         )
         assert assemble.returncode == 0, assemble.stderr
 
-        mem_lines = [line.strip() for line in mem_path.read_text().splitlines() if line.strip()]
+        mem_lines = [
+            line.strip() for line in mem_path.read_text().splitlines() if line.strip()
+        ]
         assert mem_lines, "Expected non-empty generated memory file"
         assert all(BINARY_16_RE.match(line) for line in mem_lines)
 
         tb_path = tmpdir_path / "tb_mem_no_unknown.v"
-        tb_path.write_text(
-            f"""`timescale 1ns / 1ps
+        tb_path.write_text(f"""`timescale 1ns / 1ps
 module tb_mem_no_unknown;
     reg clk = 1'b0;
     reg reset = 1'b0;
@@ -123,8 +123,7 @@ module tb_mem_no_unknown;
         $finish;
     end
 endmodule
-"""
-        )
+""")
 
         compile_result = subprocess.run(
             [

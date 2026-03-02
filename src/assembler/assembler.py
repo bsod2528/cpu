@@ -185,7 +185,9 @@ def assemble(source_path: str, output_path: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Assemble VR16 assembly into machine code.")
+    parser = argparse.ArgumentParser(
+        description="Assemble VR16 assembly into machine code."
+    )
     parser.add_argument(
         "source_path",
         nargs="?",
