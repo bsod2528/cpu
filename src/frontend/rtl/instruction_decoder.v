@@ -55,7 +55,17 @@ module instruction_decoder(
             jump_address_input <= 12'b0000_0000_0000;
         end
         else begin
-            
+
+            store_at <= 2'b00;
+            operand_one <= 2'b00;
+            operand_two <= 2'b00;
+            reg_to_work_on <= 2'b00;
+            imm_value <= 16'b0000_0000_0000_0000;
+            six_bit_dont_care <= 16'b0000_0000_0000_0000;
+            ten_bit_dont_care <= 16'b0000_0000_0000_0000;
+            twelve_bit_dont_care <= 16'b0000_0000_0000_0000;
+            jump_address_input <= 16'b0000_0000_0000_0000;
+
             // this was previous `opcode <= instruction[15:12]`
             opcode = instruction[15:12];
             case (opcode)
