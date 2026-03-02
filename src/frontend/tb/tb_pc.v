@@ -1,54 +1,80 @@
-// VR16: A basic 16-bit RISC processor
-// Copyright (C) 2025 Vishal Srivatsava AV
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 `timescale 1ns / 1ps
 
-
-module tb_pc();
-    reg jump_enable, return_enable, clk, reset;
+module tb_pc;
+    reg clk;
+    reg reset;
+    reg increment;
+    reg jump_enable;
+    reg return_enable;
+    reg flag_input;
     reg [15:0] jump_address;
+
+    wire jump_done;
     wire [15:0] counter_reg;
 
-    program_counter dut(
-        .counter_reg(counter_reg),
-        .jump_enable(jump_enable),
-        .jump_address(jump_address),
-        .return_enable(return_enable),
+    program_counter dut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .increment(increment),
+        .jump_enable(jump_enable),
+        .return_enable(return_enable),
+        .flag_input(flag_input),
+        .jump_address(jump_address),
+        .jump_done(jump_done),
+        .counter_reg(counter_reg)
     );
 
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("dump.vcd");
-        $dumpvars(0, tb_pc);
+        clk = 1'b0;
+        reset = 1'b1;
+        increment = 1'b0;
+        jump_enable = 1'b0;
+        return_enable = 1'b0;
+        flag_input = 1'b0;
+        jump_address = 16'h0000;
 
-        clk = 0;
-        reset = 1;
-        jump_enable = 0;
-        jump_address = 0;
-        return_enable = 0;
+        @(posedge clk);
+        reset = 1'b0;
 
-        #10 reset = 0;
+        increment = 1'b1;
+        repeat (3) @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd4) begin
+            $display("[FAIL] PC increment expected 4, got %0d", counter_reg);
+            $fatal(1);
+        end
 
-        #20 jump_enable = 1; jump_address = 16'b0011001100110011;
-        #10 jump_enable = 0;
-        #10 return_enable = 1;
-        #10 return_enable = 0;
-        #10 $finish;
+        increment = 1'b0;
+        jump_enable = 1'b1;
+        jump_address = 16'h0033;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'h0033 || jump_done !== 1'b1) begin
+            $display("[FAIL] PC jump expected 0x0033 and jump_done=1, got pc=%h jump_done=%b", counter_reg, jump_done);
+            $fatal(1);
+        end
+
+        jump_enable = 1'b0;
+        return_enable = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd4) begin
+            $display("[FAIL] PC return expected 4, got %0d", counter_reg);
+            $fatal(1);
+        end
+
+        return_enable = 1'b0;
+        flag_input = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd0) begin
+            $display("[FAIL] PC halt flag expected 0, got %0d", counter_reg);
+            $fatal(1);
+        end
+
+        $display("[PASS] tb_pc");
+        $finish;
     end
 endmodule
