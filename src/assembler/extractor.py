@@ -122,8 +122,6 @@ def extract_arithmetic(instruction: list[str], line: str) -> str:
         print(error)
 
 
-# TODO: Raise error when the immediate value provided is more than 1023
-# (in decimal)
 def extract_immediate_arithmetic(instruction: list[str], line: int) -> str:
     """
     Converts given instruction into 16-bit binary for *immediate value* arithmetic operations.
@@ -143,9 +141,13 @@ def extract_immediate_arithmetic(instruction: list[str], line: int) -> str:
     try:
         opcode: str = get_arithmetic_opcode(instruction[4])
         store_at: str = decode_register(instruction[5].strip(","), line)
-        temp: int = int(instruction[6])
-        temp: str = f"{temp:b}"
-        immediate_value: str = f"{temp.zfill(16 - 4 - 2)}"
+        immediate: int = int(instruction[6])
+        if immediate < 0 or immediate > 1023:
+            raise ValueError(
+                f"Immediate value out of range at line {line}: {immediate}. Expected 0 to 1023."
+            )
+
+        immediate_value: str = format(immediate, "010b")
 
         return f"{opcode}{store_at}{immediate_value}"
     except Exception as error:

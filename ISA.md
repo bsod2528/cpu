@@ -5,6 +5,8 @@
 
 Please don't mind my poor markdown skills.
 
+## Arithmetic instructions
+
 1. `ADD`:
 ```md
 0000 | 00 | 00 | 00 | xxxxxx
@@ -52,6 +54,54 @@ opcode | store_at | operand_one | operand_two | dont-care values
 0111 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
+
+### Exact immediate arithmetic semantics (`ADDI`, `SUBI`, `MULI`, `DIVI`)
+
+For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encoding and execution model are intentionally accumulator-style:
+
+- Bits `[11:10]` (`store_at`) are both:
+  - the **destination register**, and
+  - the **source register** (`operand_one`).
+- Bits `[9:0]` are a **10-bit unsigned immediate**.
+- Immediate is **zero-extended** to 16 bits before ALU use.
+- Execution formulas:
+  - `ADDI rd, imm10`: `R[rd] <- R[rd] + zero_extend(imm10)`
+  - `SUBI rd, imm10`: `R[rd] <- R[rd] - zero_extend(imm10)`
+  - `MULI rd, imm10`: `R[rd] <- R[rd] * zero_extend(imm10)`
+  - `DIVI rd, imm10`: `R[rd] <- R[rd] / zero_extend(imm10)`
+
+#### Worked examples
+
+1) `ADDI r1, 5`
+
+- Before: `R1 = 12`
+- Encoded fields:
+  - opcode=`0001`
+  - `store_at` (`r1`) = `01`
+  - imm10 (`5`) = `0000000101`
+- 16-bit instruction: `0001 01 0000000101`
+- ALU inputs:
+  - `operand_one = R1 = 12`
+  - `operand_two = zero_extend(5) = 5`
+- After: `R1 = 17`
+
+2) `SUBI r2, 3`
+
+- Before: `R2 = 20`
+- 16-bit instruction: `0011 10 0000000011`
+- After: `R2 = 17`
+
+3) `MULI r0, 4`
+
+- Before: `R0 = 7`
+- 16-bit instruction: `0101 00 0000000100`
+- After: `R0 = 28`
+
+4) `DIVI r3, 6`
+
+- Before: `R3 = 30`
+- 16-bit instruction: `0111 11 0000000110`
+- After: `R3 = 5`
 
 9. DONT KNOW WHAT TO DO HERE
 
