@@ -194,7 +194,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "output_path",
         nargs="?",
-        default="../../imem.mem",
+        default="../../mem/imem.mem",
         help="Path to write assembled machine code.",
     )
     args = parser.parse_args()

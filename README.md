@@ -39,6 +39,8 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 1. Actual `programs` start generating machine code by starting the code with `start:`, similary to stop generating machine code use `end:`.
 2. Comments can be made using `--`.
 3. For program syntax, kindly refer [isa.md](./ISA.md)
+4. Default assembler output is `mem/imem.mem`, which matches the RTL instruction memory path.
+   - Example: `cd src/assembler && python3 assembler.py ../../examples/vr-asm/add.asm`
 
 ## VRSCRIPT
 1. Variables: `<var_name> = <int>`
