@@ -81,6 +81,16 @@ module tb_pc;
             $fatal(1);
         end
 
+        // HALT (flag_input) should take priority over increment when both are asserted.
+        flag_input = 1'b1;
+        increment = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd0) begin
+            $display("[FAIL] HALT priority expected 0 with increment+flag high, got %0d", counter_reg);
+            $fatal(1);
+        end
+
         $display("[PASS] tb_pc");
         $finish;
     end

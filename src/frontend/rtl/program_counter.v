@@ -31,6 +31,11 @@ module program_counter(
 );
     reg [15:0] temp_address;
 
+    // Control priority (highest to lowest):
+    // 1) reset      -> clear program counter state
+    // 2) flag_input -> HALT behavior (force PC to 0)
+    // 3) jump/return-> control-flow redirection
+    // 4) increment  -> normal sequential execution
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             jump_done <= 1'b0;
@@ -39,8 +44,8 @@ module program_counter(
         else begin
             jump_done <= 1'b0;
 
-            if (increment)
-                counter_reg <= counter_reg + 1;
+            if (flag_input)
+                counter_reg <= 16'b0000_0000_0000_0000;
 
             else if (jump_enable) begin
                 temp_address <= counter_reg;
@@ -51,8 +56,8 @@ module program_counter(
             else if (return_enable)
                 counter_reg <= temp_address;
 
-            else if (flag_input)
-                counter_reg <= 16'b0000_0000_0000_0000;
+            else if (increment)
+                counter_reg <= counter_reg + 1;
         end
     end
 endmodule
