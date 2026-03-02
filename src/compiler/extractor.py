@@ -14,81 +14,97 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
-global current_for_iteration_value
+from dataclasses import dataclass
 
-current_for_iteration_value: str = "10"
+
+@dataclass(frozen=True)
+class ForLoopSpec:
+    """Representation of a parsed vrscript for-loop header and body."""
+
+    loop_var: str
+    iterations: int
+    register: str
+    operation: str
+    operand: int
+
+
+ARITHMETIC_OPCODES: tuple[str, ...] = ("add", "sub", "mul", "div")
+REGISTER_PREFIXES: tuple[str, ...] = ("r0", "r1", "r2", "r3")
 
 
 def extract_arithmetic(line: str) -> str:
-    """"""
-    opcode: str = line[0:3]
-    store_at: str = line[4:6]
-    operand_one: str = line[8:10]
-    operand_two: str = line[12:14]
+    """Convert an arithmetic vrscript call into vr-asm."""
+    cleaned_line = line.strip()
+    opcode, args_blob = cleaned_line.split("(", maxsplit=1)
+    args = [token.strip() for token in args_blob.rstrip(")").split(",")]
 
+    if len(args) != 3:
+        raise ValueError(f"invalid arithmetic call: {line}")
+
+    store_at, operand_one, operand_two = args
     return f"{opcode} {store_at}, {operand_one}, {operand_two};"
 
 
 def extract_register_variables(line: str) -> str:
-    """"""
-    if line[1] == "0":
-        return f"addi r0, {line[5:]};"
-    if line[1] == "1":
-        return f"addi r1, {line[5:]};"
-    if line[1] == "2":
-        return f"addi r2, {line[5:]};"
-    if line[1] == "3":
-        return f"addi r3, {line[5:]};"
+    """Convert a register assignment to immediate add syntax."""
+    lhs, rhs = [token.strip() for token in line.split("=", maxsplit=1)]
+    return f"addi {lhs}, {rhs};"
 
 
-def extract_for(line: str, line_number: int) -> str:
-    """"""
-    for_var: str = line[4]  # to find out the "variable" thats used in the iteration
-    for_var_line: int = 0  # to find out the line it's happening at
-    for_var_value: str = ""  # the variables = ___, that value lol
-    current_for_iteration_value = line[9:12]  # number of times to iterate
+def parse_for_header(line: str) -> tuple[str, int]:
+    """Parse a `for x in 10 {` style loop header."""
+    normalized = line.replace("{", " ").strip()
+    tokens = normalized.split()
 
-    register_to_interate_on: str = ""
-    register_operation: str = ""
-    register_operand: str = ""
+    if len(tokens) != 4 or tokens[0] != "for" or tokens[2] != "in":
+        raise ValueError(f"invalid for-loop header: {line}")
 
-    # Stupid move, but hey it works.
-    with open("./add.vrs") as _source:
-        _lines: list[str] = []
+    return tokens[1], int(tokens[3])
 
-        for _line in _source:
-            _lines.append(_line.strip("\n"))
 
-        meta = 1
-        for code in _lines:
-            if line in code:
-                for_var_line = meta
+def parse_loop_body_instruction(line: str) -> tuple[str, str, int]:
+    """Parse a loop body instruction like `r3 ++ 2`."""
+    tokens = line.split()
 
-            meta = meta + 1
+    if len(tokens) != 3:
+        raise ValueError(f"invalid loop body instruction: {line}")
 
-        for key, value in enumerate(_lines, 1):
-            if key == 7:
-                for_var_value = value[4:]
+    register, operation, operand = tokens
+    return register, operation, int(operand)
 
-            if key == for_var_line + 1:
-                # print(value.strip(" "))
-                temp = value.strip(" ")
 
-                register_to_interate_on = temp[0:2]
-                register_operation = temp[3:5]
-                register_operand = temp[6:]
+def extract_for(lines: list[str], loop_header_index: int) -> ForLoopSpec:
+    """Build a loop spec from source lines without relying on fixed indexes."""
+    loop_var, iterations = parse_for_header(lines[loop_header_index])
 
-    temp: int = 0
-    while temp != current_for_iteration_value:
-        if register_operation == "++":
-            return f"addi {register_to_interate_on}, {register_operand}"
-        if register_operation == "--":
-            return f"subi {register_to_interate_on}, {register_operand}"
-        if register_operation == "**":
-            return f"muli {register_to_interate_on}, {register_operand}"
-        if register_operation == "//":
-            return f"divi {register_to_interate_on}, {register_operand}"
-        temp = temp + 1
+    body_start = loop_header_index + 1
+    while body_start < len(lines) and not lines[body_start].strip():
+        body_start += 1
 
-    # print(f"{register_to_interate_on}\n{register_operation}\n{register_operand}")
-    # print(f"for variable: {for_var}\niteration line at: {for_var_line}\n{for_var} = {for_var_value}\niterate times: {current_for_iteration_value}")
+    if body_start >= len(lines):
+        raise ValueError("for-loop body not found")
+
+    register, operation, operand = parse_loop_body_instruction(
+        lines[body_start].strip()
+    )
+    return ForLoopSpec(
+        loop_var=loop_var,
+        iterations=iterations,
+        register=register,
+        operation=operation,
+        operand=operand,
+    )
+
+
+def compile_loop_instruction(spec: ForLoopSpec) -> str:
+    """Translate a parsed loop body instruction into vr-asm immediate ops."""
+    if spec.operation == "++":
+        return f"addi {spec.register}, {spec.operand};"
+    if spec.operation == "--":
+        return f"subi {spec.register}, {spec.operand};"
+    if spec.operation == "**":
+        return f"muli {spec.register}, {spec.operand};"
+    if spec.operation == "//":
+        return f"divi {spec.register}, {spec.operand};"
+
+    raise ValueError(f"unsupported loop operation: {spec.operation}")

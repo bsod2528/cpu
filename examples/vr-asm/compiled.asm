@@ -3,4 +3,14 @@ start:
 	addi r1, 5;
 	addi r2, 10;
 	add r0, r1, r2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
+	addi r3, 2;
 end:
