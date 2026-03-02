@@ -14,8 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
-import typer
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 
 from baseclass import OpcodeNotPresent
 
@@ -30,7 +29,7 @@ from extractor import (
 )
 
 
-with open("../asm source files/not_gate.asm") as source:
+with open("../../examples/vr-asm/add.asm") as source:
     lines: list[str] = []
 
     for line in source:
@@ -39,7 +38,7 @@ with open("../asm source files/not_gate.asm") as source:
 # This is to "clear" the file so that everything gets appended later on.
 # This file hasn't been git-ignored as you can see the "latest" mem file
 # based on given input asm.
-with open("../memory files/write_imem.mem", "w") as imem_to_clear:
+with open("../../imem.mem", "w") as imem_to_clear:
     imem_to_clear.write("")
 
 
@@ -125,7 +124,7 @@ while list_index != total_lines:
             if result is None:
                 raise OpcodeNotPresent(opcode, list_index + 1)
 
-            with open("../memory files/write_imem.mem", "a") as imem:
+            with open("../../imem.mem", "a") as imem:
                 imem.write(f"{result}\n")
         except OpcodeNotPresent as error:
             print(error)

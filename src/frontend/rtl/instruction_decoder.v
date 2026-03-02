@@ -54,7 +54,7 @@ module instruction_decoder(
             jump_address_input <= 12'b0000_0000_0000;
         end
         else begin
-            opcode <= instruction[15:12];
+            opcode = instruction[15:12];
             case (opcode)
                 4'b0000: begin // ADD
                     store_at <= instruction[11:10];

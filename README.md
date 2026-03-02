@@ -41,8 +41,8 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 3. For program syntax, kindly refer [isa.md](./ISA.md)
 
 ## VRSCRIPT
-1. Variables: `<var_name> = <int>
-2. All instructions are accessed by calling respective functions: `<instruction>(<arg>, [arg])
+1. Variables: `<var_name> = <int>`
+2. All instructions are accessed by calling respective functions: `<instruction>(<arg>, [arg])`
 3. Iterative loops will be coming soon.
 
 # Licensing

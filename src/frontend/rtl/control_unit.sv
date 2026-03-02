@@ -76,7 +76,7 @@ module control_unit(
             current_state <= next_state;
     end
 
-    always @ (*) begin
+    always @(posedge clk or posedge reset) begin
         enable_alu = 1'b0;
         enable_reg_write = 1'b0;
         enable_jump = 1'b0;
@@ -106,7 +106,8 @@ module control_unit(
                         select_operation = 2'b00;
                         if (alu_done)
                             next_state = WRITE;
-                        next_state = WRITE;
+                        else
+                            next_state = EXECUTE;
                     end
 
                     // alu immediate operations
@@ -115,7 +116,8 @@ module control_unit(
                         select_operation = 2'b01;
                         if (alu_done)
                             next_state = WRITE;
-                        next_state = WRITE;
+                        else
+                            next_state = EXECUTE;
                     end
 
                     // jump
