@@ -36,20 +36,23 @@ module program_counter(
             jump_done <= 1'b0;
             counter_reg <= 16'b0000_0000_0000_0000;
         end
+        else begin
+            jump_done <= 1'b0;
 
-        else if (increment)
-            counter_reg <= counter_reg + 1;
+            if (increment)
+                counter_reg <= counter_reg + 1;
 
-        else if (jump_enable) begin
-            temp_address <= counter_reg;
-            counter_reg <= jump_address;
-            jump_done <= 1'b1;
+            else if (jump_enable) begin
+                temp_address <= counter_reg;
+                counter_reg <= jump_address;
+                jump_done <= 1'b1;
+            end
+
+            else if (return_enable)
+                counter_reg <= temp_address;
+
+            else if (flag_input)
+                counter_reg <= 16'b0000_0000_0000_0000;
         end
-
-        else if (return_enable)
-            counter_reg <= temp_address;
-
-        else if (flag_input)
-            counter_reg <= 16'b0000_0000_0000_0000;
     end
 endmodule
