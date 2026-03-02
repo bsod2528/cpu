@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
+import argparse
+from pathlib import Path
+
 from colorama import Fore, Style
 
 from baseclass import OpcodeNotPresent
@@ -27,25 +30,6 @@ from extractor import (
     extract_delete,
     extract_halt,
 )
-
-
-with open("../../examples/vr-asm/add.asm") as source:
-    lines: list[str] = []
-
-    for line in source:
-        lines.append(line.strip("\n"))
-
-# This is to "clear" the file so that everything gets appended later on.
-# This file hasn't been git-ignored as you can see the "latest" mem file
-# based on given input asm.
-with open("../../imem.mem", "w") as imem_to_clear:
-    imem_to_clear.write("")
-
-
-total_lines: int = len(lines)
-start_present: bool = False
-list_index: int = 0
-result: str = ""
 
 # As of date 23-04-25, it struck my mind that I have "duplicate" instructions.
 # `storei`: adds immediate value into a register, for some bizzare reason I've kept it as 8-bit.
@@ -91,43 +75,77 @@ def choose_extractor(opcode: str, instruction: list[str], line: int) -> str | No
     return None
 
 
-while list_index != total_lines:
-    current_instruction = lines[list_index].strip(";").split(" ")
+def assemble(source_path: str, output_path: str) -> None:
+    source = Path(source_path)
+    output = Path(output_path)
 
-    print(
-        Fore.BLUE
-        + Style.BRIGHT
-        + "INFO"
-        + Style.RESET_ALL
-        + ": "
-        + f"{list_index} -> {current_instruction}"
-        + Style.RESET_ALL
-    )
+    with source.open() as source_file:
+        lines: list[str] = [line.strip("\n") for line in source_file]
 
-    if current_instruction[0].startswith("--") or (current_instruction[0] == " "):
-        list_index = list_index + 1
-        continue
+    # This is to "clear" the file so that everything gets appended later on.
+    # This file hasn't been git-ignored as you can see the "latest" mem file
+    # based on given input asm.
+    output.write_text("")
 
-    if current_instruction[0] == "start:":
-        list_index = list_index + 1
-        start_present = True
-        continue
+    total_lines: int = len(lines)
+    start_present: bool = False
+    list_index: int = 0
 
-    if current_instruction[0] == "end:":
-        break
+    while list_index != total_lines:
+        current_instruction = lines[list_index].strip(";").split(" ")
 
-    if start_present:
-        try:
-            opcode = current_instruction[4]
-            result = choose_extractor(opcode, current_instruction, list_index + 1)
+        print(
+            Fore.BLUE
+            + Style.BRIGHT
+            + "INFO"
+            + Style.RESET_ALL
+            + ": "
+            + f"{list_index} -> {current_instruction}"
+            + Style.RESET_ALL
+        )
 
-            if result is None:
-                raise OpcodeNotPresent(opcode, list_index + 1)
+        if current_instruction[0].startswith("--") or (current_instruction[0] == " "):
+            list_index = list_index + 1
+            continue
 
-            with open("../../imem.mem", "a") as imem:
-                imem.write(f"{result}\n")
-        except OpcodeNotPresent as error:
-            print(error)
+        if current_instruction[0] == "start:":
+            list_index = list_index + 1
+            start_present = True
+            continue
+
+        if current_instruction[0] == "end:":
             break
 
-    list_index = list_index + 1
+        if start_present:
+            try:
+                opcode = current_instruction[4]
+                result = choose_extractor(opcode, current_instruction, list_index + 1)
+
+                if result is None:
+                    raise OpcodeNotPresent(opcode, list_index + 1)
+
+                with output.open("a") as imem:
+                    imem.write(f"{result}\n")
+            except OpcodeNotPresent as error:
+                print(error)
+                break
+
+        list_index = list_index + 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Assemble VR16 assembly into machine code.")
+    parser.add_argument(
+        "source_path",
+        nargs="?",
+        default="../../examples/vr-asm/add.asm",
+        help="Path to the source assembly file.",
+    )
+    parser.add_argument(
+        "output_path",
+        nargs="?",
+        default="../../imem.mem",
+        help="Path to write assembled machine code.",
+    )
+    args = parser.parse_args()
+    assemble(args.source_path, args.output_path)
