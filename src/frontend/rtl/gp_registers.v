@@ -41,17 +41,23 @@ module gp_registers(
     reg [15:0] reg_d;
 
     always @ (*) begin
+        operand_one_reg = 16'b0000_0000_0000_0000;
+        operand_two_reg = 16'b0000_0000_0000_0000;
+
         case (read_operand_one_reg)
             2'b00: operand_one_reg = reg_a;
             2'b01: operand_one_reg = reg_b;
             2'b10: operand_one_reg = reg_c;
             2'b11: operand_one_reg = reg_d;
+            default: operand_one_reg = 16'b0000_0000_0000_0000;
         endcase
+
         case (read_operand_two_reg)
             2'b00: operand_two_reg = reg_a;
             2'b01: operand_two_reg = reg_b;
             2'b10: operand_two_reg = reg_c;
             2'b11: operand_two_reg = reg_d;
+            default: operand_two_reg = 16'b0000_0000_0000_0000;
         endcase
     end
 
@@ -62,8 +68,6 @@ module gp_registers(
             reg_b <= 16'b0000_0000_0000_0000;
             reg_c <= 16'b0000_0000_0000_0000;
             reg_d <= 16'b0000_0000_0000_0000;
-            operand_one_reg <= 16'b0000_0000_0000_0000;
-            operand_two_reg <= 16'b0000_0000_0000_0000;
             write_done_reg <= 1'b0;
         end
 
@@ -73,6 +77,12 @@ module gp_registers(
                 2'b01: reg_b <= alu_result;
                 2'b10: reg_c <= alu_result;
                 2'b11: reg_d <= alu_result;
+                default: begin
+                    reg_a <= reg_a;
+                    reg_b <= reg_b;
+                    reg_c <= reg_c;
+                    reg_d <= reg_d;
+                end
             endcase
             write_done_reg <= 1'b1;
         end

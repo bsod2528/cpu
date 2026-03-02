@@ -84,6 +84,16 @@ module tb_gpr;
             $fatal(1);
         end
 
+
+        // Unknown selector robustness checks.
+        read_operand_one_reg = 2'b0x;
+        read_operand_two_reg = 2'bx1;
+        #1;
+        if (operand_one_reg !== 16'h0000 || operand_two_reg !== 16'h0000) begin
+            $display("[FAIL] GPR unknown selector handling failed op1=%h op2=%h", operand_one_reg, operand_two_reg);
+            $fatal(1);
+        end
+
         $display("[PASS] tb_gpr");
         $finish;
     end
