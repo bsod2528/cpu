@@ -22,6 +22,7 @@ from colorama import Fore, Style
 from baseclass import OpcodeNotPresent
 
 from extractor import (
+    ParsedInstruction,
     extract_arithmetic,
     extract_immediate_arithmetic,
     extract_logic_main,
@@ -37,19 +38,60 @@ from extractor import (
 # I'll change the ISA later on but uhh yeah :moyai:
 
 
-def choose_extractor(opcode: str, instruction: list[str], line: int) -> str | None:
+def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction | None:
+    trimmed_line: str = raw_line.strip()
+    if not trimmed_line:
+        return None
+
+    tokens: list[str] = trimmed_line.strip(";").split()
+    if not tokens or tokens[0].startswith("--"):
+        return None
+
+    if tokens[0] in ["start:", "end:"]:
+        return ParsedInstruction(opcode=tokens[0], operands=[], line_number=line_number)
+
+    cleaned_tokens: list[str] = [token.strip(",") for token in tokens]
+    opcode: str = cleaned_tokens[0]
+    operands: list[str] = cleaned_tokens[1:]
+
+    expected_operands_by_opcode: dict[str, int] = {
+        "add": 3,
+        "sub": 3,
+        "mul": 3,
+        "div": 3,
+        "addi": 2,
+        "subi": 2,
+        "muli": 2,
+        "divi": 2,
+        "and": 3,
+        "or": 3,
+        "xor": 3,
+        "not": 2,
+        "delete": 1,
+        "halt": 0,
+        "jump": 1,
+    }
+
+    if opcode in expected_operands_by_opcode:
+        expected_operands: int = expected_operands_by_opcode[opcode]
+        if len(operands) != expected_operands:
+            raise ValueError(
+                f"Syntax error at line {line_number}: opcode '{opcode}' expects "
+                f"{expected_operands} operand(s), got {len(operands)}. "
+                f"Line content: '{raw_line.strip()}'"
+            )
+
+    return ParsedInstruction(opcode=opcode, operands=operands, line_number=line_number)
+
+
+def choose_extractor(instruction: ParsedInstruction) -> str | None:
     """
     Based on opcode, extraction is done.
 
     Arguments:
     ----------
-    opcode: str
-        To decide which extractor must be used.
-    instruction: list[str]
-        Current instruction in the `VR16-ASM` format which has to be passed on to the
-        extractor.
-    line: int
-        Line number from the source file in which this current instruction is present.
+    instruction: ParsedInstruction
+        Structured instruction with opcode, operands and source line number.
 
     Returns:
     --------
@@ -57,18 +99,20 @@ def choose_extractor(opcode: str, instruction: list[str], line: int) -> str | No
         Output of the extractor function chosen which is essentially a string representation
         of the binary machine code.
     """
+    opcode: str = instruction.opcode
+
     if opcode in ["add", "sub", "mul", "div"]:
-        return extract_arithmetic(instruction, line)
+        return extract_arithmetic(instruction)
     if opcode in ["addi", "subi", "muli", "divi"]:
-        return extract_immediate_arithmetic(instruction, line)
+        return extract_immediate_arithmetic(instruction)
     if opcode == "jump":
-        return extract_jump(instruction, line)
+        return extract_jump(instruction)
     if opcode == "delete":
-        return extract_delete(instruction, line)
+        return extract_delete(instruction)
     if opcode in ["and", "or", "xor"]:
-        return extract_logic_main(instruction, line)
+        return extract_logic_main(instruction)
     if opcode == "not":
-        return extract_logic_side(instruction, line)
+        return extract_logic_side(instruction)
     if opcode == "halt":
         return extract_halt(instruction)
 
@@ -92,7 +136,14 @@ def assemble(source_path: str, output_path: str) -> None:
     list_index: int = 0
 
     while list_index != total_lines:
-        current_instruction = lines[list_index].strip(";").split(" ")
+        line_number: int = list_index + 1
+        try:
+            parsed_instruction: ParsedInstruction | None = parse_instruction_line(
+                lines[list_index], line_number
+            )
+        except ValueError as error:
+            print(error)
+            break
 
         print(
             Fore.BLUE
@@ -100,33 +151,32 @@ def assemble(source_path: str, output_path: str) -> None:
             + "INFO"
             + Style.RESET_ALL
             + ": "
-            + f"{list_index} -> {current_instruction}"
+            + f"{list_index} -> {parsed_instruction}"
             + Style.RESET_ALL
         )
 
-        if current_instruction[0].startswith("--") or (current_instruction[0] == " "):
+        if parsed_instruction is None:
             list_index = list_index + 1
             continue
 
-        if current_instruction[0] == "start:":
+        if parsed_instruction.opcode == "start:":
             list_index = list_index + 1
             start_present = True
             continue
 
-        if current_instruction[0] == "end:":
+        if parsed_instruction.opcode == "end:":
             break
 
         if start_present:
             try:
-                opcode = current_instruction[4]
-                result = choose_extractor(opcode, current_instruction, list_index + 1)
+                result = choose_extractor(parsed_instruction)
 
                 if result is None:
-                    raise OpcodeNotPresent(opcode, list_index + 1)
+                    raise OpcodeNotPresent(parsed_instruction.opcode, line_number)
 
                 with output.open("a") as imem:
                     imem.write(f"{result}\n")
-            except OpcodeNotPresent as error:
+            except (OpcodeNotPresent, ValueError) as error:
                 print(error)
                 break
 

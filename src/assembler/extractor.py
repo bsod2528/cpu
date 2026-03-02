@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
+
 from baseclass import RegisterNotPresent
 
 ARITHMETIC_OPCODES: dict[str, str] = {
@@ -35,6 +37,24 @@ LOGICAL_OPCODES: dict[str, str] = {
 }
 
 REGISTER_VALUES: dict[str, str] = {"r0": "00", "r1": "01", "r2": "10", "r3": "11"}
+
+
+@dataclass
+class ParsedInstruction:
+    opcode: str
+    operands: list[str]
+    line_number: int
+
+
+def _validate_operand_count(
+    instruction: ParsedInstruction, expected_operands: int
+) -> list[str]:
+    if len(instruction.operands) != expected_operands:
+        raise ValueError(
+            f"Syntax error at line {instruction.line_number}: opcode '{instruction.opcode}' "
+            f"expects {expected_operands} operand(s), got {len(instruction.operands)}."
+        )
+    return instruction.operands
 
 
 def decode_register(register: str, line: int) -> str:
@@ -95,7 +115,7 @@ def get_logic_opcode(opcode: str) -> str:
     return LOGICAL_OPCODES[opcode]
 
 
-def extract_arithmetic(instruction: list[str], line: str) -> str:
+def extract_arithmetic(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for *non-immediate value* arithmetic operations.
 
@@ -111,18 +131,17 @@ def extract_arithmetic(instruction: list[str], line: str) -> str:
     str:
         16-bit binary string representation of the given arithmetic instruction.
     """
-    try:
-        opcode: str = get_arithmetic_opcode(instruction[4])
-        store_at: str = decode_register(instruction[5].strip(","), line)
-        operand_one: str = decode_register(instruction[6].strip(","), line)
-        operand_two: str = decode_register(instruction[7], line)
+    opcode: str = get_arithmetic_opcode(instruction.opcode)
+    operands: list[str] = _validate_operand_count(instruction, 3)
 
-        return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
-    except Exception as error:
-        print(error)
+    store_at: str = decode_register(operands[0], instruction.line_number)
+    operand_one: str = decode_register(operands[1], instruction.line_number)
+    operand_two: str = decode_register(operands[2], instruction.line_number)
+
+    return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
 
 
-def extract_immediate_arithmetic(instruction: list[str], line: int) -> str:
+def extract_immediate_arithmetic(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for *immediate value* arithmetic operations.
 
@@ -138,23 +157,22 @@ def extract_immediate_arithmetic(instruction: list[str], line: int) -> str:
     str:
         16-bit binary string representation of the given arithmetic instruction.
     """
-    try:
-        opcode: str = get_arithmetic_opcode(instruction[4])
-        store_at: str = decode_register(instruction[5].strip(","), line)
-        immediate: int = int(instruction[6])
-        if immediate < 0 or immediate > 1023:
-            raise ValueError(
-                f"Immediate value out of range at line {line}: {immediate}. Expected 0 to 1023."
-            )
+    opcode: str = get_arithmetic_opcode(instruction.opcode)
+    operands: list[str] = _validate_operand_count(instruction, 2)
 
-        immediate_value: str = format(immediate, "010b")
+    store_at: str = decode_register(operands[0], instruction.line_number)
+    immediate: int = int(operands[1])
+    if immediate < 0 or immediate > 1023:
+        raise ValueError(
+            f"Immediate value out of range at line {instruction.line_number}: {immediate}. Expected 0 to 1023."
+        )
 
-        return f"{opcode}{store_at}{immediate_value}"
-    except Exception as error:
-        print(error)
+    immediate_value: str = format(immediate, "010b")
+
+    return f"{opcode}{store_at}{immediate_value}"
 
 
-def extract_logic_main(instruction: list[str], line: int) -> str:
+def extract_logic_main(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for *2-operand* logical operations.
 
@@ -170,19 +188,18 @@ def extract_logic_main(instruction: list[str], line: int) -> str:
     str:
         16-bit binary string representation of the given logical instruction.
     """
-    try:
-        opcode: str = get_logic_opcode(instruction[4])
-        store_at: str = decode_register(instruction[5].strip(","), line)
-        operand_one: str = decode_register(instruction[6].strip(","), line)
-        operand_two: str = decode_register(instruction[7], line)
+    opcode: str = get_logic_opcode(instruction.opcode)
+    operands: list[str] = _validate_operand_count(instruction, 3)
 
-        return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
-    except Exception as error:
-        print(error)
+    store_at: str = decode_register(operands[0], instruction.line_number)
+    operand_one: str = decode_register(operands[1], instruction.line_number)
+    operand_two: str = decode_register(operands[2], instruction.line_number)
+
+    return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
 
 
 # Could've kept a better name, will change once my mind strikes with one.
-def extract_logic_side(instruction: list[str], line: int) -> str:
+def extract_logic_side(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for *1-operand* logical operations.
 
@@ -198,24 +215,23 @@ def extract_logic_side(instruction: list[str], line: int) -> str:
     str:
         16-bit binary string representation of the given logical instruction.
     """
-    try:
-        opcode: str = get_logic_opcode(instruction[4])
-        store_at: str = decode_register(instruction[5].strip(","), line)
-        operand_one: str = decode_register(instruction[6].strip(","), line)
+    opcode: str = get_logic_opcode(instruction.opcode)
+    operands: list[str] = _validate_operand_count(instruction, 2)
 
-        return f"{opcode}{store_at}{operand_one}xxxxxxxx"
-    except Exception as error:
-        print(error)
+    store_at: str = decode_register(operands[0], instruction.line_number)
+    operand_one: str = decode_register(operands[1], instruction.line_number)
+
+    return f"{opcode}{store_at}{operand_one}xxxxxxxx"
 
 
-def extract_jump(instruction: list[str]) -> None:
+def extract_jump(instruction: ParsedInstruction) -> None:
     """
     This hasn't been done, as there is a logical dilemma going in my head regarding the working of this.
     """
     return None
 
 
-def extract_delete(instruction: list[str], line: int) -> str:
+def extract_delete(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for deletion of data from a register..
 
@@ -231,15 +247,13 @@ def extract_delete(instruction: list[str], line: int) -> str:
     str:
         16-bit binary string representation of the given delete instruction.
     """
-    try:
-        destination_register: str = decode_register(instruction[5], line)
+    operands: list[str] = _validate_operand_count(instruction, 1)
+    destination_register: str = decode_register(operands[0], instruction.line_number)
 
-        return f"1010{destination_register}xxxxxxxxxx"
-    except Exception as error:
-        print(error)
+    return f"1010{destination_register}xxxxxxxxxx"
 
 
-def extract_halt(instruction: list[str]) -> str:
+def extract_halt(instruction: ParsedInstruction) -> str:
     """
     Converts given instruction into 16-bit binary for halt operations.
 
@@ -253,7 +267,5 @@ def extract_halt(instruction: list[str]) -> str:
     str:
         16-bit binary string representation of the given halt instruction.
     """
-    try:
-        return f"1111xxxxxxxxxxxx"
-    except Exception as error:
-        print(error)
+    _validate_operand_count(instruction, 0)
+    return f"1111xxxxxxxxxxxx"
