@@ -56,6 +56,7 @@ module gp_registers(
     end
 
     always @(posedge clk or posedge reset) begin
+    //always @(*) begin
         if (reset) begin
             reg_a <= 16'b0000_0000_0000_0000;
             reg_b <= 16'b0000_0000_0000_0000;

@@ -76,7 +76,12 @@ module control_unit(
             current_state <= next_state;
     end
 
-    always @(posedge clk or posedge reset) begin
+    // always @(posedge clk or posedge reset) begin
+    // the above one line has caused me 1 year worth of break down, 
+    // making me to think i'm a fool and put me to
+    // hell worths of pain and ruined 1 year of my mental health
+    
+    always @(*) begin
         enable_alu = 1'b0;
         enable_reg_write = 1'b0;
         enable_jump = 1'b0;
@@ -128,14 +133,20 @@ module control_unit(
                 endcase
             end
 
+//            WRITE: begin
+//                enable_reg_write = 1'b1;
+//                next_state = FETCH;
+//                enable_pc_increment = 1'b1;
+//                if (reg_write_done) begin
+//                    next_state = FETCH;
+//                    enable_pc_increment = 1'b1;
+//                end
+//            end
+
             WRITE: begin
                 enable_reg_write = 1'b1;
-                next_state = FETCH;
                 enable_pc_increment = 1'b1;
-                if (reg_write_done) begin
-                    next_state = FETCH;
-                    enable_pc_increment = 1'b1;
-                end
+                next_state = FETCH;
             end
 
             JUMP: begin

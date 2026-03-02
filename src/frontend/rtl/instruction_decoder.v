@@ -40,7 +40,8 @@ module instruction_decoder(
     output reg [15:0] twelve_bit_dont_care,
     output reg [15:0] jump_address_input
 );
-    always @ (posedge clk or posedge reset) begin
+    // always @ (posedge clk or posedge reset) begin
+    always @ (*) begin
         if (reset) begin
             opcode <= 4'b0000;
             store_at <= 2'b00;
@@ -54,6 +55,8 @@ module instruction_decoder(
             jump_address_input <= 12'b0000_0000_0000;
         end
         else begin
+            
+            // this was previous `opcode <= instruction[15:12]`
             opcode = instruction[15:12];
             case (opcode)
                 4'b0000: begin // ADD

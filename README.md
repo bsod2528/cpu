@@ -53,4 +53,4 @@ There are three parts to this CPU:
 
 1. Frontend deals with the synthesizable code written in verilog, the rtl and the corresponding testbenches, which are licensed under `GPLv3`. 
 2. Backend (will start soon) deals with the actual physical design of the cpu, which will be licensed under the `CERN-OHL-S`.
-3. Toolchain deals with the software side of the project, the `assembler/` and `compiler/` which makes programming on the CPU, which also come under `GPLv3`. 
+3. Toolchain deals with the software side of the project, the `src/assembler/` and `src/compiler/` which makes programming on the CPU, which also come under `GPLv3`. 
