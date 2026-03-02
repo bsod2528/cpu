@@ -138,7 +138,7 @@ def extract_arithmetic(instruction: ParsedInstruction) -> str:
     operand_one: str = decode_register(operands[1], instruction.line_number)
     operand_two: str = decode_register(operands[2], instruction.line_number)
 
-    return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
+    return f"{opcode}{store_at}{operand_one}{operand_two}000000"
 
 
 def extract_immediate_arithmetic(instruction: ParsedInstruction) -> str:
@@ -195,7 +195,7 @@ def extract_logic_main(instruction: ParsedInstruction) -> str:
     operand_one: str = decode_register(operands[1], instruction.line_number)
     operand_two: str = decode_register(operands[2], instruction.line_number)
 
-    return f"{opcode}{store_at}{operand_one}{operand_two}xxxxxx"
+    return f"{opcode}{store_at}{operand_one}{operand_two}000000"
 
 
 # Could've kept a better name, will change once my mind strikes with one.
@@ -221,7 +221,7 @@ def extract_logic_side(instruction: ParsedInstruction) -> str:
     store_at: str = decode_register(operands[0], instruction.line_number)
     operand_one: str = decode_register(operands[1], instruction.line_number)
 
-    return f"{opcode}{store_at}{operand_one}xxxxxxxx"
+    return f"{opcode}{store_at}{operand_one}00000000"
 
 
 def extract_jump(instruction: ParsedInstruction) -> str:
@@ -269,7 +269,7 @@ def extract_delete(instruction: ParsedInstruction) -> str:
     operands: list[str] = _validate_operand_count(instruction, 1)
     destination_register: str = decode_register(operands[0], instruction.line_number)
 
-    return f"1010{destination_register}xxxxxxxxxx"
+    return f"1010{destination_register}0000000000"
 
 
 def extract_halt(instruction: ParsedInstruction) -> str:
@@ -287,4 +287,4 @@ def extract_halt(instruction: ParsedInstruction) -> str:
         16-bit binary string representation of the given halt instruction.
     """
     _validate_operand_count(instruction, 0)
-    return f"1111xxxxxxxxxxxx"
+    return f"1111000000000000"
