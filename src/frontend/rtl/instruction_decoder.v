@@ -67,6 +67,7 @@ module instruction_decoder(
                 end
                 4'b0001: begin // ADDI
                     store_at <= instruction[11:10];
+                    operand_one <= instruction[11:10];
                     imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0010: begin // SUB
@@ -77,6 +78,7 @@ module instruction_decoder(
                 end
                 4'b0011: begin // SUBI
                     store_at <= instruction[11:10];
+                    operand_one <= instruction[11:10];
                     imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0100: begin // MUL
@@ -87,6 +89,7 @@ module instruction_decoder(
                 end
                 4'b0101: begin // MULI
                     store_at <= instruction[11:10];
+                    operand_one <= instruction[11:10];
                     imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b0110: begin // DIV
@@ -97,6 +100,7 @@ module instruction_decoder(
                 end
                 4'b0111: begin // DIVI
                     store_at <= instruction[11:10];
+                    operand_one <= instruction[11:10];
                     imm_value <= {6'b000_000, instruction[9:0]};
                 end
                 4'b1000: begin // STOREI

@@ -119,6 +119,7 @@ module control_unit(
                     4'b0001, 4'b0011, 4'b0101, 4'b0111: begin
                         enable_alu = 1'b1;
                         select_operation = 2'b01;
+                        reg_read_address_one = store_at;
                         if (alu_done)
                             next_state = WRITE;
                         else
