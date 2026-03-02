@@ -1,0 +1,74 @@
+name: Verilog Test Suite
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+
+      - name: Run full test suite
+        run: |
+          set -euo pipefail
+
+          run_tb() {
+            local name="$1"
+            shift
+            echo "== Running ${name} =="
+            iverilog -g2009 -o "/tmp/${name}.out" "$@"
+            vvp "/tmp/${name}.out"
+          }
+
+          run_tb tb_pc \
+            src/frontend/rtl/program_counter.v \
+            src/frontend/tb/tb_pc.v
+
+          run_tb tb_imem \
+            src/frontend/rtl/instruction_memory.v \
+            src/frontend/tb/tb_imem.v
+
+          run_tb tb_id \
+            src/frontend/rtl/instruction_decoder.v \
+            src/frontend/tb/tb_id.v
+
+          run_tb tb_gpr \
+            src/frontend/rtl/gp_registers.v \
+            src/frontend/tb/tb_gpr.v
+
+          run_tb tb_cu \
+            src/frontend/rtl/control_unit.sv \
+            src/frontend/tb/tb_cu.v
+
+          run_tb tb_alu_math \
+            src/frontend/rtl/alu.v \
+            src/frontend/tb/tb_alu_math.v
+
+          run_tb tb_cpu_second_instruction_regression \
+            src/frontend/rtl/program_counter.v \
+            src/frontend/rtl/instruction_memory.v \
+            src/frontend/rtl/instruction_decoder.v \
+            src/frontend/rtl/gp_registers.v \
+            src/frontend/rtl/control_unit.sv \
+            src/frontend/rtl/alu.v \
+            src/frontend/vr16_cpu.v \
+            src/frontend/tb/tb_cpu_second_instruction_regression.v
+
+          run_tb tb_cpu \
+            src/frontend/rtl/program_counter.v \
+            src/frontend/rtl/instruction_memory.v \
+            src/frontend/rtl/instruction_decoder.v \
+            src/frontend/rtl/gp_registers.v \
+            src/frontend/rtl/control_unit.sv \
+            src/frontend/rtl/alu.v \
+            src/frontend/vr16_cpu.v \
+            src/frontend/tb/tb_cpu.v

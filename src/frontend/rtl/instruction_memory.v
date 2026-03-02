@@ -21,7 +21,9 @@
 // Have to mention the inspiration for this: https://www.edaplayground.com/x/iCVx
 // Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
 
-module instruction_memory(
+module instruction_memory #(
+    parameter MEM_FILE = "mem/imem.mem"
+)(
     input wire clk,
     input wire reset,
     input wire enable,
@@ -34,7 +36,7 @@ module instruction_memory(
 
     initial begin
         instruction = 16'b0000_0000_0000_0000;
-        $readmemb("mem/imem.mem", imem, 0, 9);
+        $readmemb(MEM_FILE, imem);
     end
 
     always @ (posedge clk or posedge reset) begin

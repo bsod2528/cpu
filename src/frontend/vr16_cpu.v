@@ -17,7 +17,9 @@
 `timescale 1ns / 1ps
 
 
-module vr16_cpu(
+module vr16_cpu #(
+    parameter IMEM_FILE = "mem/imem.mem"
+)(
     input wire global_clk,
     input wire global_reset
 );
@@ -98,7 +100,9 @@ module vr16_cpu(
         .counter_reg(pc_counter_reg_op)
     );
 
-    instruction_memory vr16_im(
+    instruction_memory #(
+        .MEM_FILE(IMEM_FILE)
+    ) vr16_im(
         .clk(global_clk),
         .reset(global_reset),
         .enable(im_enable_imem_ip),
