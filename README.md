@@ -45,7 +45,8 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 ## VRSCRIPT
 1. Variables: `<var_name> = <int>`
 2. All instructions are accessed by calling respective functions: `<instruction>(<arg>, [arg])`
-3. Iterative loops will be coming soon.
+3. Compile a script with: `cd src/compiler && python3 compiler.py ../../examples/vrscript/add.vrs ../../examples/vr-asm/compiled.asm`
+4. For regression examples, see `examples/vrscript/loop_fixture.vrs` and `examples/vr-asm/loop_fixture_expected.asm`.
 
 # Licensing
 There are three parts to this CPU:

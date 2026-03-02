@@ -14,79 +14,81 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
+import argparse
+from pathlib import Path
+
 from extractor import (
+    ARITHMETIC_OPCODES,
+    REGISTER_PREFIXES,
+    compile_loop_instruction,
     extract_arithmetic,
-    extract_register_variables,
     extract_for,
-    current_for_iteration_value,
+    extract_register_variables,
 )
 
-# This won't be running this code for now.
-# I don't even know if this can be considered as a compiler.
-# Games the game.
 
-with open("./add.vrs") as source:
-    lines: list[str] = []
-
-    for line in source:
-        lines.append(line.strip("\n"))
-
-with open("../asm source files/compiled.asm", "w") as output_asm:
-    output_asm.write("start:\n")
-
-total_lines: int = len(lines)
-list_index: int = 0
+def build_cli() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Compile vrscript source to vr-asm.")
+    parser.add_argument("source_path", type=Path, help="Path to vrscript source file")
+    parser.add_argument("output_path", type=Path, help="Path to output vr-asm file")
+    return parser
 
 
-def parser(line: str, line_number: int) -> str:
-    """"""
+def parse_instruction(line: str) -> str | None:
+    stripped = line.strip()
 
-    if line.startswith(("r0", "r1", "r2", "r3")):
-        return extract_register_variables(line)
+    if not stripped or stripped.startswith("``"):
+        return None
 
-    if line.startswith(("add", "sub", "mul", "div")):
-        return extract_arithmetic(line)
+    if stripped.startswith(REGISTER_PREFIXES):
+        return extract_register_variables(stripped)
 
-    # TODO: SO BAD, SO BAD SO BAD GOD HELP.
-    # I'm supposed to be doing the control-unit not this.
+    if stripped.startswith(ARITHMETIC_OPCODES):
+        return extract_arithmetic(stripped)
 
-    # if line.startswith("for"):
-    #     return extract_for(line, line_number)
-
-
-def for_loop_append():
-    """"""
-    temp: int = 0
-
-    while temp != current_for_iteration_value:
-        with open("../asm source files/compiled.asm", "w") as output_asm:
-            output_asm.write(f"\n{result}\n")
-        temp = temp + 1
-        break
+    return None
 
 
-while list_index != total_lines:
-    code = lines[list_index]
+def compile_source(source_path: Path, output_path: Path) -> None:
+    lines = source_path.read_text(encoding="utf-8").splitlines()
+    compiled_lines: list[str] = ["start:"]
 
-    # comments integration
-    if code[0:2] == "``":
-        list_index = list_index + 1
-        continue
+    list_index = 0
+    while list_index < len(lines):
+        code = lines[list_index].strip()
 
-    result = parser(code, list_index + 1)
+        if not code or code.startswith("``"):
+            list_index += 1
+            continue
 
-    if result is None:
-        list_index = list_index + 1
-        continue
+        if code.startswith("for"):
+            loop_spec = extract_for(lines, list_index)
+            loop_instruction = compile_loop_instruction(loop_spec)
+            for _ in range(loop_spec.iterations):
+                compiled_lines.append(f"\t{loop_instruction}")
 
-    if code[0:3] == "for":
-        for_loop_append()
+            loop_end = list_index + 1
+            while loop_end < len(lines) and "}" not in lines[loop_end]:
+                loop_end += 1
+            list_index = loop_end + 1
+            continue
 
-    with open("../asm source files/compiled.asm", "a") as output_asm:
+        result = parse_instruction(code)
         if result is not None:
-            output_asm.write(f"\t{result}\n")
+            compiled_lines.append(f"\t{result}")
 
-    list_index = list_index + 1
+        list_index += 1
 
-with open("../asm source files/compiled.asm", "a") as output_asm:
-    output_asm.write("end:\n")
+    compiled_lines.append("end:")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(compiled_lines) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    args = build_cli().parse_args()
+    compile_source(args.source_path, args.output_path)
+
+
+if __name__ == "__main__":
+    main()
