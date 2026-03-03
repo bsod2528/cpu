@@ -1,6 +1,22 @@
+// =============================================================================
+// File      : tb_alu_math.v
+// Module    : tb_alu_math
+// Brief     : Testbench for the ALU — arithmetic, logical, and edge-case ops.
+//
+// Description:
+//   Drives all supported opcodes through the `alu` module and checks:
+//     - Correct result value for each operation.
+//     - `alu_done` assertion after each computation.
+//   Tests are grouped into: basic arithmetic, logical operations,
+//   immediate-mode arithmetic paths, overflow/underflow edge cases, and
+//   division-by-zero behaviour (expected to produce unknown/X bits).
+// =============================================================================
 `timescale 1ns / 1ps
 
 module tb_alu_math;
+    // -------------------------------------------------------------------------
+    // Stimulus inputs driven by the testbench.
+    // -------------------------------------------------------------------------
     reg clk;
     reg reset;
     reg alu_enable;
@@ -8,9 +24,13 @@ module tb_alu_math;
     reg [15:0] operand_one;
     reg [15:0] operand_two;
 
+    // -------------------------------------------------------------------------
+    // Observed outputs from the DUT.
+    // -------------------------------------------------------------------------
     wire [15:0] result;
     wire alu_done;
 
+    // Step 1: Instantiate the Device Under Test (DUT).
     alu uut (
         .clk(clk),
         .reset(reset),
@@ -22,8 +42,18 @@ module tb_alu_math;
         .alu_done(alu_done)
     );
 
+    // Step 2: Free-running clock with 10 ns period (5 ns half-period).
     always #5 clk = ~clk;
 
+    // -------------------------------------------------------------------------
+    // Reusable task: apply one ALU operation and verify result + done flag.
+    // Parameters:
+    //   op       - 4-bit opcode to apply.
+    //   a        - 16-bit first operand.
+    //   b        - 16-bit second operand.
+    //   expected - Expected 16-bit result.
+    //   label    - Human-readable test name for failure messages.
+    // -------------------------------------------------------------------------
     task run_op;
         input [3:0] op;
         input [15:0] a;
@@ -31,29 +61,35 @@ module tb_alu_math;
         input [15:0] expected;
         input [127:0] label;
         begin
+            // Step 3: Apply inputs to the DUT.
             opcode = op;
             operand_one = a;
             operand_two = b;
             alu_enable = 1'b1;
+            // Step 4: Wait for the rising edge so the ALU latches the operation.
             @(posedge clk);
             #1;
 
+            // Step 5: Verify the result matches the expected value.
             if (result !== expected) begin
                 $display("[FAIL] %0s expected=%h got=%h", label, expected, result);
                 $fatal(1);
             end
 
+            // Step 6: Verify the done flag was asserted.
             if (alu_done !== 1'b1) begin
                 $display("[FAIL] %0s alu_done was not asserted", label);
                 $fatal(1);
             end
 
+            // Step 7: De-assert enable and wait one cycle so the done flag clears.
             alu_enable = 1'b0;
             @(posedge clk);
         end
     endtask
 
     initial begin
+        // Step 8: Initialise all inputs to known states before releasing reset.
         clk = 1'b0;
         reset = 1'b1;
         alu_enable = 1'b0;
@@ -61,6 +97,7 @@ module tb_alu_math;
         operand_one = 16'h0000;
         operand_two = 16'h0000;
 
+        // Step 9: Release reset after one clock edge.
         @(posedge clk);
         reset = 1'b0;
 
@@ -89,6 +126,7 @@ module tb_alu_math;
         run_op(4'b0110, 16'h0000, 16'h0007, 16'h0000, "DIV zero numerator");
 
         // Division by zero should produce unknown bits in simulation.
+        // Step 10: Drive a divide-by-zero scenario and confirm X propagation.
         opcode = 4'b0110;
         operand_one = 16'd5;
         operand_two = 16'd0;
