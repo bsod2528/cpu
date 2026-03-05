@@ -1,21 +1,21 @@
 # cpu
 [Documentation](https://bsod2528.github.io/pages/projects/vr16.html) | [Blogs](https://bsod2528.github.io/pages/tags.html#soc-dev)
 
-VR16, a basic RISC processor designed and written in verilog. As time permits, this will be made better and backend design will also be updated.
+VR16 is a basic RISC processor designed and written in Verilog. As time permits, this will be improved, and the backend design will also be updated.
 
 # Features
-- single stage cpu
+- single-stage CPU
 - each instruction is 16-bit.
 - 4 general purpose registers (r0, r1, r2, r3).
-- runs on custom instruction set architecture called [vr-isa](ISA.md). 
-- `vr-asm` as assembly and `vrscript` for writing easier code to run on the cpu.
+- runs on a custom instruction set architecture called [VR16 ISA](ISA.md).
+- `VRASM` for assembly and `VRScript` for writing simpler code to run on the CPU.
 
 > [!WARNING]
-> The isa is very much work in progress, so things are subject to change.
-> Documentation for `vr-asm` and `vrscript` may or may not be up-to-date due to extensive prematurity of their presence. 
+> The ISA is still a work in progress, so details are subject to change.
+> Documentation for `VRASM` and `VRScript` may not always be up to date because these tools are still in an early stage.
 
 # Setup
-On how to run this project on your local machine.
+How to run this project on your local machine.
 
 ## Python environment (required for assembler/compiler + helper scripts)
 - Tested with Python `3.10` to `3.12`.
@@ -42,7 +42,7 @@ Then run:
 ```
 
 ## Assembler/compiler-only usage (no RTL simulation)
-If you only want to use the toolchain (`vr-asm` / `vrscript`), you just need the Python setup above (virtual environment + `pip install -r requirements.txt`).
+If you only want to use the toolchain (`VRASM` / `VRScript`), you only need the Python setup above (virtual environment + `pip install -r requirements.txt`).
 `iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
 
 ## Quickstart
@@ -73,16 +73,16 @@ Run the full flow in this order:
 
 As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 
-# Basic docs for VRASM and VRSCRIPT
+# Basic docs for VRASM and VRScript
 ## VRASM
-1. Actual `programs` start generating machine code by starting the code with `start:`, similary to stop generating machine code use `end:`.
+1. Programs begin generating machine code when the code starts with `start:`. To stop generating machine code, use `end:`.
 2. Comments can be made using `--`.
-3. For program syntax, kindly refer [isa.md](./ISA.md)
+3. For program syntax, refer to [ISA.md](./ISA.md).
 4. Default assembler output is `mem/imem.mem`, which matches the RTL instruction memory path.
    - Module entrypoint (recommended): `PYTHONPATH=src python3 -m assembler examples/vr-asm/add.asm mem/imem.mem`
    - Script entrypoint (also supported): `PYTHONPATH=src python3 src/assembler/assembler.py examples/vr-asm/add.asm mem/imem.mem`
 
-## VRSCRIPT
+## VRScript
 1. Comments can be made using ` `` ` (double backtick).
 2. Register assignments: `<register> = <int>` — only `r0`, `r1`, `r2`, `r3` are valid left-hand sides.
 3. Arithmetic calls: `<instruction>(<store_at>, <operand_one>, <operand_two>)` — supported instructions are `add`, `sub`, `mul`, `div`.
