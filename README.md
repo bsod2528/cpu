@@ -45,6 +45,27 @@ Then run:
 If you only want to use the toolchain (`vr-asm` / `vrscript`), you just need the Python setup above (virtual environment + `pip install -r requirements.txt`).
 `iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
 
+## Quickstart
+Run the full flow in this order:
+
+1. Compile `examples/vrscript/add.vrs` to `examples/vr-asm/compiled.asm`:
+   ```bash
+   PYTHONPATH=src python3 -m compiler examples/vrscript/add.vrs examples/vr-asm/compiled.asm
+   ```
+2. Assemble `examples/vr-asm/compiled.asm` into `mem/imem.mem`:
+   ```bash
+   PYTHONPATH=src python3 -m assembler examples/vr-asm/compiled.asm mem/imem.mem
+   ```
+3. Build and run the RTL simulation:
+   ```bash
+   ./compile.sh
+   ./sim.sh
+   ```
+4. Expected output artifacts after running the steps above:
+   - `mem/imem.mem`
+   - `output.out`
+   - `dump.vcd`
+
 # Road-Map
 - [ ] finish basic cpu
 - [ ] pipeline it
