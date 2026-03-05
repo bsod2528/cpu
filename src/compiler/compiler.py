@@ -142,16 +142,22 @@ def compile_source(source_path: Path, output_path: Path) -> None:
         except ValueError:
             pass
         else:
-            loop_spec = extract_for(lines, list_index)
+            loop_end = list_index + 1
+            while loop_end < len(lines) and "}" not in lines[loop_end]:
+                loop_end += 1
+
+            if loop_end >= len(lines):
+                raise CompilationError(
+                    f"Line {list_index + 1}: unterminated for-loop starting here; missing closing '}}'"
+                )
+
+            loop_spec = extract_for(lines, list_index, loop_end)
             loop_instruction = compile_loop_instruction(loop_spec)
             # Step 4a: Emit one copy of the body instruction per iteration.
             for _ in range(loop_spec.iterations):
                 compiled_lines.append(f"\t{loop_instruction}")
 
             # Step 4b: Skip past the closing `}` of the loop body.
-            loop_end = list_index + 1
-            while loop_end < len(lines) and "}" not in lines[loop_end]:
-                loop_end += 1
             list_index = loop_end + 1
             continue
 
