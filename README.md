@@ -66,6 +66,24 @@ Run the full flow in this order:
    - `output.out`
    - `dump.vcd`
 
+## Troubleshooting
+- **Symptom:** `ModuleNotFoundError` when running `python3 -m assembler` or `python3 -m compiler`.
+  **Likely cause:** Python cannot find the project modules because `src/` is not on `PYTHONPATH`.
+  **Fix:** Run commands with `PYTHONPATH=src`, for example:
+  `PYTHONPATH=src python3 -m assembler examples/vr-asm/compiled.asm mem/imem.mem`.
+
+- **Symptom:** `iverilog: command not found` or `gtkwave: command not found`.
+  **Likely cause:** RTL simulation tools are not installed (or not on your shell `PATH`).
+  **Fix:** Install `iverilog` and `gtkwave`, then verify they are available with `iverilog -V` and `gtkwave --version`.
+
+- **Symptom:** `sim.sh` fails because `output.out` is missing.
+  **Likely cause:** `./compile.sh` was not run first, so the simulation binary/output target was never generated.
+  **Fix:** Run `./compile.sh` before `./sim.sh` each time you clean outputs or change build artifacts.
+
+- **Symptom:** `mem/imem.mem` is empty or does not change after assembly.
+  **Likely cause:** Malformed assembly boundaries, especially missing/misplaced `start:` and `end:` delimiters, so no instructions are emitted.
+  **Fix:** Ensure your ASM has a valid `start:`...`end:` region containing instructions, then re-run the assembler command.
+
 # Road-Map
 - [ ] finish basic cpu
 - [ ] pipeline it
