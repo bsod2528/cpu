@@ -28,7 +28,7 @@ Module-level constants:
 
 from dataclasses import dataclass
 
-from baseclass import RegisterNotPresent
+from assembler.baseclass import RegisterNotPresent
 
 ARITHMETIC_OPCODES: dict[str, str] = {
     "add": "0000",

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
-ASSEMBLER_DIR = ROOT_DIR / "src" / "assembler"
-ASSEMBLER_SCRIPT = ASSEMBLER_DIR / "assembler.py"
+SRC_DIR = ROOT_DIR / "src"
 
 
 def run_assembler(source_text: str) -> tuple[int, str, str, str]:
@@ -17,8 +17,9 @@ def run_assembler(source_text: str) -> tuple[int, str, str, str]:
         source_path.write_text(source_text)
 
         result = subprocess.run(
-            ["python3", str(ASSEMBLER_SCRIPT), str(source_path), str(output_path)],
-            cwd=ASSEMBLER_DIR,
+            ["python3", "-m", "assembler", str(source_path), str(output_path)],
+            cwd=ROOT_DIR,
+            env={**os.environ, "PYTHONPATH": str(SRC_DIR)},
             capture_output=True,
             text=True,
             check=False,

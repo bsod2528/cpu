@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
-COMPILER_DIR = ROOT_DIR / "src" / "compiler"
-COMPILER_SCRIPT = COMPILER_DIR / "compiler.py"
+SRC_DIR = ROOT_DIR / "src"
 
 
 def run_compiler(source_text: str) -> subprocess.CompletedProcess[str]:
@@ -18,8 +18,9 @@ def run_compiler(source_text: str) -> subprocess.CompletedProcess[str]:
         source_path.write_text(source_text, encoding="utf-8")
 
         return subprocess.run(
-            ["python3", str(COMPILER_SCRIPT), str(source_path), str(output_path)],
-            cwd=COMPILER_DIR,
+            ["python3", "-m", "compiler", str(source_path), str(output_path)],
+            cwd=ROOT_DIR,
+            env={**os.environ, "PYTHONPATH": str(SRC_DIR)},
             capture_output=True,
             text=True,
             check=False,

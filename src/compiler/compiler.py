@@ -27,13 +27,13 @@ Supported VRScript constructs:
 
 Usage (CLI)::
 
-    python3 compiler.py <source_path> <output_path>
+    python3 -m compiler <source_path> <output_path>
 """
 
 import argparse
 from pathlib import Path
 
-from extractor import (
+from compiler.extractor import (
     ARITHMETIC_OPCODES,
     REGISTER_PREFIXES,
     compile_loop_instruction,

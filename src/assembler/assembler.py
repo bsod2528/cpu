@@ -30,11 +30,11 @@ Workflow:
 
 Usage (CLI)::
 
-    python3 assembler.py [source_path] [output_path]
+    python3 -m assembler [source_path] [output_path]
 
     Defaults:
-        source_path  = ../../examples/vr-asm/add.asm
-        output_path  = ../../mem/imem.mem
+        source_path  = examples/vr-asm/add.asm
+        output_path  = mem/imem.mem
 """
 
 import argparse
@@ -43,9 +43,9 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
-from baseclass import OpcodeNotPresent
+from assembler.baseclass import OpcodeNotPresent
 
-from extractor import (
+from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,
     extract_immediate_arithmetic,
@@ -299,26 +299,24 @@ def assemble(source_path: str, output_path: str) -> None:
     output.write_text(final_text)
 
 
-if __name__ == "__main__":
-    # Step 11: Build the CLI argument parser with sensible defaults so the
-    #          assembler can be run without arguments during development.
+def main() -> None:
+    """Entry point: parse CLI args and run the assembler."""
     parser = argparse.ArgumentParser(
         description="Assemble VR16 assembly into machine code."
     )
     parser.add_argument(
         "source_path",
         nargs="?",
-        default="../../examples/vr-asm/add.asm",
+        default="examples/vr-asm/add.asm",
         help="Path to the source assembly file.",
     )
     parser.add_argument(
         "output_path",
         nargs="?",
-        default="../../mem/imem.mem",
+        default="mem/imem.mem",
         help="Path to write assembled machine code.",
     )
     args = parser.parse_args()
-    # Step 12: Run the assembler with the provided (or default) paths.
     try:
         assemble(args.source_path, args.output_path)
     except AssemblerError as error:
@@ -326,3 +324,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
