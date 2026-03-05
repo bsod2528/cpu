@@ -84,12 +84,17 @@ For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encod
   - the **destination register**, and
   - the **source register** (`operand_one`).
 - Bits `[9:0]` are a **10-bit unsigned immediate**.
+- Assembly literals for `imm10` are accepted in **base-10 only** (e.g., `0`, `17`, `1023`).
+- Valid `imm10` range is **`0..1023`**, interpreted as an **unsigned** value.
 - Immediate is **zero-extended** to 16 bits before ALU use.
 - Execution formulas:
   - `ADDI rd, imm10`: `R[rd] <- R[rd] + zero_extend(imm10)`
   - `SUBI rd, imm10`: `R[rd] <- R[rd] - zero_extend(imm10)`
   - `MULI rd, imm10`: `R[rd] <- R[rd] * zero_extend(imm10)`
   - `DIVI rd, imm10`: `R[rd] <- R[rd] / zero_extend(imm10)`
+
+> [!NOTE]
+> **Assembler validation rule (immediate arithmetic family):** non-base-10 literals or values outside `0..1023` raise `Invalid immediate ... Expected a base-10 integer in range 0 to 1023.`
 
 #### Worked examples
 
@@ -137,6 +142,20 @@ opcode | dont-care | reg_to_store_in | 8-bit immediate value
 1001 | 000000000000 |
 opcode | jump_to_12_bit_address for now
 ```
+
+- Assembly literals for `jump_address` are accepted in **base-10 only**.
+- Valid `jump_address` range is **`0..4095`**, interpreted as an **unsigned** address.
+
+> [!NOTE]
+> **Assembler validation rule (jump family):** non-base-10 literals or values outside `0..4095` raise `Invalid jump address ... Expected a base-10 integer in range 0 to 4095.`
+
+### Rule for future immediate/address-bearing instructions
+
+Any future instruction that carries an immediate/address field should follow the same assembler-facing contract:
+
+- literal input is **base-10 only**,
+- the accepted range is the instruction field width interpreted as **unsigned**,
+- out-of-range or non-decimal input should raise an `Invalid ... Expected a base-10 integer in range ...` error matching the extractor style.
 
 11. `DELETE`:
 ```md
