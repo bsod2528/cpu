@@ -137,11 +137,12 @@ def compile_source(source_path: Path, output_path: Path) -> None:
 
         # Step 4: Handle for-loop construct — parse the header, extract the
         #         body instruction, and unroll the loop `iterations` times.
-        try:
-            parse_for_header(code)
-        except ValueError:
-            pass
-        else:
+        if code.startswith("for "):
+            try:
+                parse_for_header(code)
+            except ValueError as error:
+                raise CompilationError(f"Line {list_index + 1}: {error}") from error
+
             loop_end = list_index + 1
             while loop_end < len(lines) and "}" not in lines[loop_end]:
                 loop_end += 1
@@ -155,7 +156,7 @@ def compile_source(source_path: Path, output_path: Path) -> None:
             loop_instruction = compile_loop_instruction(loop_spec)
             # Step 4a: Emit one copy of the body instruction per iteration.
             for _ in range(loop_spec.iterations):
-                compiled_lines.append(f"\t{loop_instruction}")
+                compiled_lines.append(f"	{loop_instruction}")
 
             # Step 4b: Skip past the closing `}` of the loop body.
             list_index = loop_end + 1
