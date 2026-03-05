@@ -21,12 +21,12 @@ binary machine code understood by the VR16 instruction memory.
 
 Workflow:
     1. Read all lines from the source ``.asm`` file.
-    2. Clear the output ``.mem`` file so previous results are not preserved.
+    2. Parse/encode every instruction into an in-memory list first.
     3. Iterate line by line, skipping blanks and comments (``--`` prefix).
     4. Honour ``start:`` / ``end:`` delimiters — only encode instructions
        that appear between them.
-    5. For each valid instruction, delegate to the appropriate extractor
-       function and append the resulting 16-bit binary string.
+    5. Only after successful parsing/encoding of the full source, write the
+       complete result to the output file in one go.
 
 Usage (CLI)::
 
@@ -208,17 +208,22 @@ class AssemblerError(Exception):
 def assemble(source_path: str, output_path: str) -> None:
     """Assemble a VR-ASM source file into a binary `.mem` output file.
 
-    Reads the source file line by line, parses each instruction, and appends
-    the resulting 16-bit binary string to the output file.  Only instructions
-    between ``start:`` and ``end:`` delimiters are emitted.
+    Reads the source file line by line, parses each instruction, and collects
+    resulting 16-bit binary strings in memory. Only instructions between
+    ``start:`` and ``end:`` delimiters are emitted.
+
+    File-write behavior on failures:
+    - If parsing/encoding fails at any point, this function raises
+      :class:`AssemblerError` and **does not modify** ``output_path``.
+    - ``output_path`` is only overwritten after full successful assembly.
 
     Arguments:
     ----------
     source_path: str
         Path to the input VR-ASM ``.asm`` file.
     output_path: str
-        Path to the output binary ``.mem`` file.  The file is truncated to
-        empty before writing to avoid stale data from a previous run.
+        Path to the output binary ``.mem`` file. The file is overwritten only
+        when full assembly succeeds.
     """
     source = Path(source_path)
     output = Path(output_path)
@@ -227,13 +232,9 @@ def assemble(source_path: str, output_path: str) -> None:
     with source.open() as source_file:
         lines: list[str] = [line.strip("\n") for line in source_file]
 
-    # This is to "clear" the file so that everything gets appended later on.
-    # This file hasn't been git-ignored as you can see the "latest" mem file
-    # based on given input asm.
-    # Saint: Good practice — truncating first prevents leftover instructions
-    # Saint: from a longer previous program from silently remaining in the file.
-    # Step 2: Truncate the output file so only the current assembly is written.
-    output.write_text("")
+    # Step 2: Collect encoded machine-code lines in memory first.
+    #         This guarantees we never leave partially-written output on errors.
+    encoded_lines: list[str] = []
 
     total_lines: int = len(lines)
     start_present: bool = False  # Tracks whether `start:` has been seen.
@@ -284,13 +285,18 @@ def assemble(source_path: str, output_path: str) -> None:
                 if result is None:
                     raise OpcodeNotPresent(parsed_instruction.opcode, line_number)
 
-                # Step 10: Append the binary string (one instruction per line).
-                with output.open("a") as imem:
-                    imem.write(f"{result}\n")
+                # Step 10: Save binary string in memory (one instruction per line).
+                encoded_lines.append(result)
             except (OpcodeNotPresent, ValueError) as error:
                 raise AssemblerError(line_number, str(error)) from error
 
         list_index = list_index + 1
+
+    # Step 11: Persist all encoded lines atomically-at-end after full success.
+    final_text: str = "\n".join(encoded_lines)
+    if encoded_lines:
+        final_text = f"{final_text}\n"
+    output.write_text(final_text)
 
 
 if __name__ == "__main__":
