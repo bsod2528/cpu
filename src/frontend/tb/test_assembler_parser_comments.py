@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
 from assembler.assembler import parse_instruction_line
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
 def test_parse_instruction_ignores_full_line_comment() -> None:

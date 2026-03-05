@@ -53,7 +53,6 @@ def test_compiler_does_not_treat_for_prefixed_words_as_loop_headers() -> None:
         assert "unsupported syntax" in compile_result.stdout
 
 
-
 def test_compiler_reports_unterminated_for_loop_with_start_line() -> None:
     compile_result = run_compiler("for i in 3 {\n    r0 ++ 1\n")
 
@@ -65,10 +64,7 @@ def test_compiler_reports_unterminated_for_loop_with_start_line() -> None:
 
 def test_compiler_rejects_for_loop_with_multiple_body_instructions() -> None:
     compile_result = run_compiler(
-        "for i in 2 {\n"
-        "    r0 ++ 1\n"
-        "    r1 ++ 1\n"
-        "}\n"
+        "for i in 2 {\n" "    r0 ++ 1\n" "    r1 ++ 1\n" "}\n"
     )
 
     assert compile_result.returncode != 0
@@ -92,6 +88,7 @@ def test_compiler_rejects_excessive_for_loop_iteration_count() -> None:
     assert "Compilation error:" in compile_result.stdout
     assert "for-loop iteration count out of range" in compile_result.stdout
     assert "for i in 10001 {" in compile_result.stdout
+
 
 if __name__ == "__main__":
     test_compiler_reports_line_number_for_unrecognized_statement()
