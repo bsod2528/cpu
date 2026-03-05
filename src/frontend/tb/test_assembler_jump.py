@@ -37,16 +37,32 @@ def test_jump_encodes_12bit_immediate() -> None:
     assert lines == ["1001000000001010", "1001111111111111"]
 
 
+
+
+def test_jump_rejects_non_integer_address() -> None:
+    code = """start:
+jump bar
+end:
+"""
+    rc, stdout, stderr, mem = run_assembler(code)
+
+    assert rc != 0, "assembler should return non-zero for invalid jump address"
+    assert "Invalid jump address at line 2" in stdout
+    assert "Expected a base-10 integer in range 0 to 4095" in stdout
+    assert mem.strip() == ""
+
 def test_jump_rejects_out_of_range_immediate() -> None:
     code = """start:\njump 4096\nend:\n"""
     rc, stdout, stderr, mem = run_assembler(code)
 
     assert rc != 0, "assembler should return non-zero for invalid jump immediate"
-    assert "Jump address out of range" in stdout
+    assert "Invalid jump address at line 2" in stdout
+    assert "Expected a base-10 integer in range 0 to 4095" in stdout
     assert mem.strip() == ""
 
 
 if __name__ == "__main__":
     test_jump_encodes_12bit_immediate()
+    test_jump_rejects_non_integer_address()
     test_jump_rejects_out_of_range_immediate()
     print("[PASS] test_assembler_jump")

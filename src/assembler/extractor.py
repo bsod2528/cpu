@@ -222,12 +222,20 @@ def extract_immediate_arithmetic(instruction: ParsedInstruction) -> str:
 
     # Step 3: Encode the destination register.
     store_at: str = decode_register(operands[0], instruction.line_number)
-    # Step 4: Parse the immediate integer value.
-    immediate: int = int(operands[1])
+    # Step 4: Parse and validate the immediate integer value.
+    try:
+        immediate: int = int(operands[1])
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid immediate at line {instruction.line_number}: {operands[1]!r}. "
+            "Expected a base-10 integer in range 0 to 1023."
+        ) from exc
+
     # Step 5: Validate that the immediate fits within the 10-bit field (0–1023).
     if immediate < 0 or immediate > 1023:
         raise ValueError(
-            f"Immediate value out of range at line {instruction.line_number}: {immediate}. Expected 0 to 1023."
+            f"Invalid immediate at line {instruction.line_number}: {immediate}. "
+            "Expected a base-10 integer in range 0 to 1023."
         )
 
     # Step 6: Format the immediate as a zero-padded 10-bit binary string.
@@ -329,12 +337,20 @@ def extract_jump(instruction: ParsedInstruction) -> str:
     """
     operands: list[str] = _validate_operand_count(instruction, 1)
 
-    # Step 1: Parse the jump target address from the operand string.
-    jump_address: int = int(operands[0])
+    # Step 1: Parse and validate the jump target address from the operand string.
+    try:
+        jump_address: int = int(operands[0])
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid jump address at line {instruction.line_number}: {operands[0]!r}. "
+            "Expected a base-10 integer in range 0 to 4095."
+        ) from exc
+
     # Step 2: Validate the address fits within the 12-bit jump address field.
     if jump_address < 0 or jump_address > 4095:
         raise ValueError(
-            f"Jump address out of range at line {instruction.line_number}: {jump_address}. Expected 0 to 4095."
+            f"Invalid jump address at line {instruction.line_number}: {jump_address}. "
+            "Expected a base-10 integer in range 0 to 4095."
         )
 
     # Step 3: Format the address as a zero-padded 12-bit binary string.
