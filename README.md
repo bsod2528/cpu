@@ -1,9 +1,11 @@
 # cpu
+
 [Documentation](https://bsod2528.github.io/pages/projects/vr16.html) | [Blogs](https://bsod2528.github.io/pages/tags.html#soc-dev)
 
 VR16 is a basic RISC processor designed and written in Verilog. As time permits, this will be improved, and the backend design will also be updated.
 
-# Features
+## Features
+
 - single-stage CPU
 - each instruction is 16-bit.
 - 4 general purpose registers (r0, r1, r2, r3).
@@ -14,10 +16,12 @@ VR16 is a basic RISC processor designed and written in Verilog. As time permits,
 > The ISA is still a work in progress, so details are subject to change.
 > Documentation for `VRASM` and `VRScript` may not always be up to date because these tools are still in an early stage.
 
-# Setup
+## Setup
+
 How to run this project on your local machine.
 
 ## Python environment (required for assembler/compiler + helper scripts)
+
 - Tested with Python `3.10` to `3.12`.
 
 Create and activate a virtual environment from the repo root:
@@ -29,6 +33,7 @@ pip install -r requirements.txt
 ```
 
 ## RTL simulation prerequisites (`compile.sh` / `sim.sh`)
+
 Install the simulator + waveform viewer:
 
 - `iverilog`
@@ -42,12 +47,14 @@ Then run:
 ```
 
 ## Assembler/compiler-only usage (no RTL simulation)
+
 If you only want to use the toolchain (`VRASM` / `VRScript`), you only need the Python setup above (virtual environment + `pip install -r requirements.txt`).
 `iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
 
 ## Verification
 
 ### Python testbench checks (`pytest`)
+
 Frontend Python testbench regressions live under `src/frontend/tb/test_*.py` and are expected to be run with `pytest` from the repository root:
 
 ```bash
@@ -55,6 +62,7 @@ pytest src/frontend/tb/test_*.py
 ```
 
 ### RTL simulation checks (`compile.sh` + `sim.sh`)
+
 For RTL flow validation, run the simulation scripts in order:
 
 ```bash
@@ -63,13 +71,16 @@ For RTL flow validation, run the simulation scripts in order:
 ```
 
 ### Minimal checks by change type
+
 - **Documentation-only changes:** verify markdown renders cleanly and perform a quick sanity read-through of edited sections.
 - **Code changes (RTL/toolchain/tests/scripts):** run both Python tests (`pytest src/frontend/tb/test_*.py`) and the RTL simulation flow (`./compile.sh` then `./sim.sh`) before opening a PR.
 
 ### Environment constraints
+
 If hardware tooling is unavailable in your environment (for example, missing `iverilog`/`gtkwave` or restricted execution), document what was skipped and why in your PR notes, and still run the checks that are available (such as `pytest`).
 
 ## Quickstart
+
 Run the full flow in this order:
 
 1. Compile `examples/vrscript/add.vrs` to `examples/vr-asm/compiled.asm`:
@@ -91,6 +102,7 @@ Run the full flow in this order:
    - `dump.vcd`
 
 ## Troubleshooting
+
 - **Symptom:** `ModuleNotFoundError` when running `python3 -m assembler` or `python3 -m compiler`.
   **Likely cause:** Python cannot find the project modules because `src/` is not on `PYTHONPATH`.
   **Fix:** Run commands with `PYTHONPATH=src`, for example:
@@ -108,15 +120,18 @@ Run the full flow in this order:
   **Likely cause:** Malformed assembly boundaries, especially missing/misplaced `start:` and `end:` delimiters, so no instructions are emitted.
   **Fix:** Ensure your ASM has a valid `start:`...`end:` region containing instructions, then re-run the assembler command.
 
-# Road-Map
+## Road-Map
+
 - [ ] finish basic cpu
 - [ ] pipeline it
 - [ ] finish physical design
 
 As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 
-# Basic docs for VRASM and VRScript
+## Basic docs for VRASM and VRScript
+
 ## VRASM
+
 1. Programs begin generating machine code when the code starts with `start:`. To stop generating machine code, use `end:`.
 2. Comments can be made using `--`.
 3. For program syntax, refer to [ISA.md](./ISA.md).
@@ -125,6 +140,7 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
    - Script entrypoint (also supported): `PYTHONPATH=src python3 src/assembler/assembler.py examples/vr-asm/add.asm mem/imem.mem`
 
 ## VRScript
+
 1. Comments can be made using ` `` ` (double backtick).
 2. Register assignments: `<register> = <int>` — only `r0`, `r1`, `r2`, `r3` are valid left-hand sides.
 3. Arithmetic calls: `<instruction>(<store_at>, <operand_one>, <operand_two>)` — supported instructions are `add`, `sub`, `mul`, `div`.
@@ -136,18 +152,22 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 6. Script entrypoint is also supported: `PYTHONPATH=src python3 src/compiler/compiler.py examples/vrscript/add.vrs examples/vr-asm/compiled.asm`
 7. For regression examples, see `examples/vrscript/loop_fixture.vrs` and `examples/vr-asm/loop_fixture_expected.asm`.
 
-# Licensing
+## Licensing
+
 There are three parts to this CPU:
+
 - frontend
 - backend
 - toolchain
 
 ## Current licensing (effective now)
+
 1. Frontend (synthesizable Verilog RTL and testbenches) is licensed under `GPLv3`.
 2. Toolchain (`src/assembler/` and `src/compiler/`) is licensed under `GPLv3`.
 
 The canonical and legally effective license terms are in the repository's [`LICENSE`](./LICENSE) file.
 
 ## Planned future licensing (not yet effective)
+
 1. Backend (physical design work) is planned to be licensed under `CERN-OHL-S`.
 2. `CERN-OHL-S` is **not currently in effect** for this repository until its full license text is added to the repo and formally adopted.
