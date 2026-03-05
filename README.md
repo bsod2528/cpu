@@ -45,6 +45,30 @@ Then run:
 If you only want to use the toolchain (`VRASM` / `VRScript`), you only need the Python setup above (virtual environment + `pip install -r requirements.txt`).
 `iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
 
+## Verification
+
+### Python testbench checks (`pytest`)
+Frontend Python testbench regressions live under `src/frontend/tb/test_*.py` and are expected to be run with `pytest` from the repository root:
+
+```bash
+pytest src/frontend/tb/test_*.py
+```
+
+### RTL simulation checks (`compile.sh` + `sim.sh`)
+For RTL flow validation, run the simulation scripts in order:
+
+```bash
+./compile.sh
+./sim.sh
+```
+
+### Minimal checks by change type
+- **Documentation-only changes:** verify markdown renders cleanly and perform a quick sanity read-through of edited sections.
+- **Code changes (RTL/toolchain/tests/scripts):** run both Python tests (`pytest src/frontend/tb/test_*.py`) and the RTL simulation flow (`./compile.sh` then `./sim.sh`) before opening a PR.
+
+### Environment constraints
+If hardware tooling is unavailable in your environment (for example, missing `iverilog`/`gtkwave` or restricted execution), document what was skipped and why in your PR notes, and still run the checks that are available (such as `pytest`).
+
 ## Quickstart
 Run the full flow in this order:
 
