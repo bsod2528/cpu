@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
-ASSEMBLER_DIR = ROOT_DIR / "src" / "assembler"
-ASSEMBLER_SCRIPT = ASSEMBLER_DIR / "assembler.py"
+SRC_DIR = ROOT_DIR / "src"
 
 
 def test_assembler_leaves_existing_output_untouched_on_mid_stream_error() -> None:
@@ -26,8 +26,9 @@ end:
         asm_path.write_text(asm_source)
 
         assemble = subprocess.run(
-            ["python3", str(ASSEMBLER_SCRIPT), str(asm_path), str(output_path)],
-            cwd=ASSEMBLER_DIR,
+            ["python3", "-m", "assembler", str(asm_path), str(output_path)],
+            cwd=ROOT_DIR,
+            env={**os.environ, "PYTHONPATH": str(SRC_DIR)},
             capture_output=True,
             text=True,
             check=False,

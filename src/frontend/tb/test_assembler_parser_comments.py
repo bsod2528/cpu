@@ -1,15 +1,9 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
-ASSEMBLER_DIR = ROOT_DIR / "src" / "assembler"
-
-if str(ASSEMBLER_DIR) not in sys.path:
-    sys.path.insert(0, str(ASSEMBLER_DIR))
-
-from assembler import parse_instruction_line  # noqa: E402
+from assembler.assembler import parse_instruction_line
 
 
 def test_parse_instruction_ignores_full_line_comment() -> None:
