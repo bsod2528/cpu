@@ -5,6 +5,27 @@
 
 Please don't mind my poor markdown skills.
 
+## Instruction summary
+
+| Mnemonic | Opcode (4-bit) | Operand format | Immediate width (if any) | Implementation status (implemented/decoder-only/planned) |
+| --- | --- | --- | --- | --- |
+| `ADD` | `0000` | `store_at, operand_one, operand_two` | None | implemented |
+| `ADDI` | `0001` | `store_at, imm10` | 10-bit | implemented |
+| `SUB` | `0010` | `store_at, operand_one, operand_two` | None | implemented |
+| `SUBI` | `0011` | `store_at, imm10` | 10-bit | implemented |
+| `MUL` | `0100` | `store_at, operand_one, operand_two` | None | implemented |
+| `MULI` | `0101` | `store_at, imm10` | 10-bit | implemented |
+| `DIV` | `0110` | `store_at, operand_one, operand_two` | None | implemented |
+| `DIVI` | `0111` | `store_at, imm10` | 10-bit | implemented |
+| `STOREI` | `1000` | `reg_to_store_in, imm8` | 8-bit | decoder-only |
+| `JUMP` | `1001` | `jump_address` | 12-bit | implemented |
+| `DELETE` | `1010` | `destination_register` | None | planned |
+| `AND` | `1011` | `store_at, operand_one, operand_two` | None | implemented |
+| `OR` | `1100` | `store_at, operand_one, operand_two` | None | implemented |
+| `NOT` | `1101` | `store_at, operand_one` | None | implemented |
+| `XOR` | `1110` | `store_at, operand_one, operand_two` | None | implemented |
+| `HALT` | `1111` | no operands | None | implemented |
+
 ## Arithmetic instructions
 
 1. `ADD`:
