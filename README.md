@@ -15,17 +15,35 @@ VR16, a basic RISC processor designed and written in verilog. As time permits, t
 > Documentation for `vr-asm` and `vrscript` may or may not be up-to-date due to extensive prematurity of their presence. 
 
 # Setup
-On how to run this project in your local machine. 
+On how to run this project on your local machine.
 
-## Windows
-1. Install WSL and install `gtkwave` and `iverilog`.
-2. Setup venv in root directory. 
-3. Run `./compile.sh` and then `./sim.sh` to view the rtl waveforms.
+## Python environment (required for assembler/compiler + helper scripts)
+- Tested with Python `3.10` to `3.12`.
 
-## Linux
-1. Install `gtkwave` and `iverilog`.
-2. Setup venv in root directory.
-3. Run `./compile.sh` and then `./sim.sh` to view the rtl waveforms.
+Create and activate a virtual environment from the repo root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## RTL simulation prerequisites (`compile.sh` / `sim.sh`)
+Install the simulator + waveform viewer:
+
+- `iverilog`
+- `gtkwave`
+
+Then run:
+
+```bash
+./compile.sh
+./sim.sh
+```
+
+## Assembler/compiler-only usage (no RTL simulation)
+If you only want to use the toolchain (`vr-asm` / `vrscript`), you just need the Python setup above (virtual environment + `pip install -r requirements.txt`).
+`iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
 
 # Road-Map
 - [ ] finish basic cpu
