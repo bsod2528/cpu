@@ -100,6 +100,12 @@ There are three parts to this CPU:
 - backend
 - toolchain
 
-1. Frontend deals with the synthesizable code written in verilog, the rtl and the corresponding testbenches, which are licensed under `GPLv3`. 
-2. Backend (will start soon) deals with the actual physical design of the cpu, which will be licensed under the `CERN-OHL-S`.
-3. Toolchain deals with the software side of the project, the `src/assembler/` and `src/compiler/` which makes programming on the CPU, which also come under `GPLv3`. 
+## Current licensing (effective now)
+1. Frontend (synthesizable Verilog RTL and testbenches) is licensed under `GPLv3`.
+2. Toolchain (`src/assembler/` and `src/compiler/`) is licensed under `GPLv3`.
+
+The canonical and legally effective license terms are in the repository's [`LICENSE`](./LICENSE) file.
+
+## Planned future licensing (not yet effective)
+1. Backend (physical design work) is planned to be licensed under `CERN-OHL-S`.
+2. `CERN-OHL-S` is **not currently in effect** for this repository until its full license text is added to the repo and formally adopted.
