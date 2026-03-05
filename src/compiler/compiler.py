@@ -43,6 +43,10 @@ from extractor import (
 )
 
 
+class CompilationError(ValueError):
+    """Raised when VRScript source cannot be compiled."""
+
+
 def build_cli() -> argparse.ArgumentParser:
     """Build and return the CLI argument parser for the compiler.
 
@@ -58,11 +62,13 @@ def build_cli() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_instruction(line: str) -> str | None:
+def parse_instruction(line_index: int, line: str) -> str | None:
     """Attempt to compile a single VRScript line into a VR-ASM instruction.
 
     Arguments:
     ----------
+    line_index: int
+        The 0-based source line index.
     line: str
         A single line of VRScript source text (may include leading whitespace).
 
@@ -70,9 +76,16 @@ def parse_instruction(line: str) -> str | None:
     --------
     str | None:
         The compiled VR-ASM instruction string, or ``None`` if the line is
-        blank, a comment, or does not match any known construct.
+        blank or a comment.
+
+    Raises:
+    -------
+    CompilationError:
+        If the source line is non-empty, non-comment, and does not match any
+        supported syntax.
     """
     stripped = line.strip()
+    source_line = line_index + 1
 
     # Step 1: Skip blank lines and comment lines (start with double backtick).
     if not stripped or stripped.startswith("``"):
@@ -86,7 +99,10 @@ def parse_instruction(line: str) -> str | None:
     if stripped.startswith(ARITHMETIC_OPCODES):
         return extract_arithmetic(stripped)
 
-    return None
+    raise CompilationError(
+        f"Line {source_line}: unsupported syntax: {stripped!r}. "
+        "Expected register assignment, arithmetic call, or for-loop."
+    )
 
 
 def compile_source(source_path: Path, output_path: Path) -> None:
@@ -135,7 +151,7 @@ def compile_source(source_path: Path, output_path: Path) -> None:
             continue
 
         # Step 5: Attempt to compile the line as a simple instruction.
-        result = parse_instruction(code)
+        result = parse_instruction(list_index, code)
         if result is not None:
             compiled_lines.append(f"\t{result}")
 
@@ -153,7 +169,11 @@ def compile_source(source_path: Path, output_path: Path) -> None:
 def main() -> None:
     """Entry point: parse CLI arguments and run the compiler."""
     args = build_cli().parse_args()
-    compile_source(args.source_path, args.output_path)
+    try:
+        compile_source(args.source_path, args.output_path)
+    except (CompilationError, ValueError) as error:
+        print(f"Compilation error: {error}")
+        raise SystemExit(1) from error
 
 
 if __name__ == "__main__":
