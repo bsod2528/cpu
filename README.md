@@ -47,6 +47,7 @@ As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 2. Register assignments: `<register> = <int>` — only `r0`, `r1`, `r2`, `r3` are valid left-hand sides.
 3. Arithmetic calls: `<instruction>(<store_at>, <operand_one>, <operand_two>)` — supported instructions are `add`, `sub`, `mul`, `div`.
 4. For loops: `for <var> in <n> { <reg> <op> <value> }` — runs the body `n` times.
+   - `<n>` must be an integer in range `0..VR16_MAX_FOR_LOOP_ITERATIONS` (default max: `10000`) to prevent huge compile-time unroll output.
    - Supported loop body operators: `++` → `addi`, `--` → `subi`, `**` → `muli`, `//` → `divi`.
    - Example: `for i in 4 { r3 ++ 2 }` emits `addi r3, 2;` four times.
 5. Compile a script with: `cd src/compiler && python3 compiler.py ../../examples/vrscript/add.vrs ../../examples/vr-asm/compiled.asm`

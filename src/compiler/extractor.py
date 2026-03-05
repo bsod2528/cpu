@@ -26,6 +26,7 @@ Module-level constants:
 """
 
 from dataclasses import dataclass
+import os
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,32 @@ class ForLoopSpec:
 
 ARITHMETIC_OPCODES: tuple[str, ...] = ("add", "sub", "mul", "div")
 REGISTER_PREFIXES: tuple[str, ...] = ("r0", "r1", "r2", "r3")
+DEFAULT_MAX_FOR_LOOP_ITERATIONS = 10_000
+
+
+def _get_max_for_loop_iterations() -> int:
+    configured_max = os.getenv("VR16_MAX_FOR_LOOP_ITERATIONS")
+    if configured_max is None:
+        return DEFAULT_MAX_FOR_LOOP_ITERATIONS
+
+    try:
+        parsed_max = int(configured_max)
+    except ValueError as error:
+        raise ValueError(
+            "invalid VR16_MAX_FOR_LOOP_ITERATIONS: "
+            f"{configured_max!r} (must be a non-negative integer)"
+        ) from error
+
+    if parsed_max < 0:
+        raise ValueError(
+            "invalid VR16_MAX_FOR_LOOP_ITERATIONS: "
+            f"{configured_max!r} (must be a non-negative integer)"
+        )
+
+    return parsed_max
+
+
+MAX_FOR_LOOP_ITERATIONS = _get_max_for_loop_iterations()
 
 
 def extract_arithmetic(line: str) -> str:
@@ -142,8 +169,24 @@ def parse_for_header(line: str) -> tuple[str, int]:
     if len(tokens) != 4 or tokens[0] != "for" or tokens[2] != "in":
         raise ValueError(f"invalid for-loop header: {line}")
 
-    # Step 3: Return the loop variable and the integer iteration count.
-    return tokens[1], int(tokens[3])
+    # Step 3: Parse and validate iteration count.
+    iteration_token = tokens[3]
+    try:
+        iterations = int(iteration_token)
+    except ValueError as error:
+        raise ValueError(
+            "invalid for-loop iteration count "
+            f"{iteration_token!r} in header: {line.strip()!r}"
+        ) from error
+
+    if iterations < 0 or iterations > MAX_FOR_LOOP_ITERATIONS:
+        raise ValueError(
+            "for-loop iteration count out of range "
+            f"{iterations!r} (allowed: 0..{MAX_FOR_LOOP_ITERATIONS}) "
+            f"in header: {line.strip()!r}"
+        )
+
+    return tokens[1], iterations
 
 
 def parse_loop_body_instruction(line: str) -> tuple[str, str, int]:
