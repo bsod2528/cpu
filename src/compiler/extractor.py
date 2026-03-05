@@ -175,7 +175,9 @@ def parse_loop_body_instruction(line: str) -> tuple[str, str, int]:
     return register, operation, int(operand)
 
 
-def extract_for(lines: list[str], loop_header_index: int) -> ForLoopSpec:
+def extract_for(
+    lines: list[str], loop_header_index: int, loop_end_index: int | None = None
+) -> ForLoopSpec:
     """Build a :class:`ForLoopSpec` from source lines.
 
     Build a loop spec from source lines without relying on fixed indexes.
@@ -187,6 +189,12 @@ def extract_for(lines: list[str], loop_header_index: int) -> ForLoopSpec:
     loop_header_index: int
         The 0-based index of the ``for …`` header line within ``lines``.
 
+    loop_end_index: int | None
+        Optional 0-based index of the loop terminator line containing ``}``.
+        When provided, the loop body is validated to fit within
+        ``(loop_header_index, loop_end_index)`` and contain exactly one
+        instruction.
+
     Returns:
     --------
     ForLoopSpec:
@@ -195,7 +203,8 @@ def extract_for(lines: list[str], loop_header_index: int) -> ForLoopSpec:
     Raises:
     -------
     ValueError:
-        When the loop body cannot be found after the header.
+        When the loop body cannot be found after the header or when body lines
+        before ``}`` are malformed.
     """
     # Step 1: Parse the loop variable and iteration count from the header line.
     loop_var, iterations = parse_for_header(lines[loop_header_index])
@@ -208,10 +217,25 @@ def extract_for(lines: list[str], loop_header_index: int) -> ForLoopSpec:
     if body_start >= len(lines):
         raise ValueError("for-loop body not found")
 
+    if loop_end_index is not None and body_start >= loop_end_index:
+        raise ValueError("for-loop body not found before closing brace")
+
+    if loop_end_index is not None:
+        body_lines = [
+            lines[index].strip()
+            for index in range(body_start, loop_end_index)
+            if lines[index].strip() and not lines[index].strip().startswith("``")
+        ]
+        if len(body_lines) != 1:
+            raise ValueError(
+                "for-loop body must contain exactly one instruction before closing brace"
+            )
+        body_instruction = body_lines[0]
+    else:
+        body_instruction = lines[body_start].strip()
+
     # Step 3: Parse the single body instruction.
-    register, operation, operand = parse_loop_body_instruction(
-        lines[body_start].strip()
-    )
+    register, operation, operand = parse_loop_body_instruction(body_instruction)
     # Step 4: Assemble and return the spec.
     return ForLoopSpec(
         loop_var=loop_var,
