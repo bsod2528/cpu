@@ -41,9 +41,7 @@ def test_jump_rejects_out_of_range_immediate() -> None:
     code = """start:\njump 4096\nend:\n"""
     rc, stdout, stderr, mem = run_assembler(code)
 
-    assert (
-        rc == 0
-    ), f"assembler invocation failed unexpectedly: stdout={stdout}\nstderr={stderr}"
+    assert rc != 0, "assembler should return non-zero for invalid jump immediate"
     assert "Jump address out of range" in stdout
     assert mem.strip() == ""
 

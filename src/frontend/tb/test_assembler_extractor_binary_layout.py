@@ -150,7 +150,33 @@ endmodule
         assert "[PASS] tb_mem_no_unknown" in run_result.stdout
 
 
+def test_assembler_cli_returns_non_zero_on_unknown_opcode() -> None:
+    asm_source = """start:
+foo r0, r1
+end:
+"""
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = Path(tmpdir)
+        asm_path = tmpdir_path / "invalid_opcode.asm"
+        mem_path = tmpdir_path / "invalid_opcode.mem"
+        asm_path.write_text(asm_source)
+
+        assemble = subprocess.run(
+            ["python3", str(ASSEMBLER_SCRIPT), str(asm_path), str(mem_path)],
+            cwd=ASSEMBLER_DIR,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert assemble.returncode != 0
+        assert "There is no such opcode" in assemble.stdout
+        assert mem_path.read_text().strip() == ""
+
+
 if __name__ == "__main__":
     test_extractor_outputs_exact_expected_16bit_binary_strings()
     test_generated_mem_loads_without_unknowns_in_instruction_memory()
+    test_assembler_cli_returns_non_zero_on_unknown_opcode()
     print("[PASS] test_assembler_extractor_binary_layout")
