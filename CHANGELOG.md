@@ -17,7 +17,7 @@ All notable changes will be logged here.
 
 ## 19-03-2025
 ### Chore
-- Updated workflow for using `iverilog` and `gtkwave` cause life is easier now.
+- Updated workflow for using `iverilog` and `gtkwave` for a simpler local simulation flow.
 
 ## 24-04-2025
 ### Added
@@ -25,8 +25,5 @@ All notable changes will be logged here.
 
 ## 06-05-2025
 ### Updated
-- The assembler now sends out errors like a real compiler. It's pretty petty but yeah. It's not a CLI tool yet but uh yeah. Soon.
----
-
-### Known Behavior
-There is a 1-cycle delay in the waveform of the instruction memory. This happens as all parts as of now.
+- The assembler now reports errors more clearly. It is not a CLI tool yet.
+- Known behavior: There is a 1-cycle delay in the instruction memory waveform at this stage.
