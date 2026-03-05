@@ -38,6 +38,7 @@ Usage (CLI)::
 """
 
 import argparse
+import sys
 from pathlib import Path
 
 from colorama import Fore, Style
@@ -192,6 +193,18 @@ def choose_extractor(instruction: ParsedInstruction) -> str | None:
     return None
 
 
+class AssemblerError(Exception):
+    """Structured assembler failure with line context."""
+
+    def __init__(self, line_number: int, message: str) -> None:
+        super().__init__(message)
+        self.line_number = line_number
+        self.message = message
+
+    def __str__(self) -> str:
+        return self.message
+
+
 def assemble(source_path: str, output_path: str) -> None:
     """Assemble a VR-ASM source file into a binary `.mem` output file.
 
@@ -235,8 +248,7 @@ def assemble(source_path: str, output_path: str) -> None:
                 lines[list_index], line_number
             )
         except ValueError as error:
-            print(error)
-            break
+            raise AssemblerError(line_number, str(error)) from error
 
         print(
             Fore.BLUE
@@ -276,8 +288,7 @@ def assemble(source_path: str, output_path: str) -> None:
                 with output.open("a") as imem:
                     imem.write(f"{result}\n")
             except (OpcodeNotPresent, ValueError) as error:
-                print(error)
-                break
+                raise AssemblerError(line_number, str(error)) from error
 
         list_index = list_index + 1
 
@@ -302,4 +313,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     # Step 12: Run the assembler with the provided (or default) paths.
-    assemble(args.source_path, args.output_path)
+    try:
+        assemble(args.source_path, args.output_path)
+    except AssemblerError as error:
+        print(error)
+        sys.exit(1)
+
+    sys.exit(0)
