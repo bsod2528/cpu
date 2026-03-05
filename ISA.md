@@ -29,48 +29,56 @@ Please don't mind my poor markdown skills.
 ## Arithmetic instructions
 
 1. `ADD`:
+
 ```md
 0000 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 2. `ADDI`:
+
   ```md
 0001 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
 3. `SUB`:
+
 ```md
 0010 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 4. `SUBI`:
+
 ```md
 0011 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
 5. `MUL`:
+
 ```md
 0100 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 6. `MULI`:
+
 ```md
 0101 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
 7. `DIV`:
+
 ```md
 0110 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 8. `DIVI`:
+
 ```md
 0111 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
@@ -130,14 +138,17 @@ For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encod
 - After: `R3 = 5`
 
 9. `STOREI`:
+
 ```md
 1000 | xx | 00 | 00000000
 opcode | dont-care | reg_to_store_in | 8-bit immediate value
 ```
+
 > [!NOTE]
 > `STOREI` is decoded by the instruction decoder (opcode `1000`) but is **not yet implemented** in the control unit or assembler. It stores an 8-bit immediate directly into a register. Since `ADDI` covers the same use-case with a 10-bit immediate in accumulator style, `STOREI` may be removed or repurposed in a future ISA revision.
 
 10. `JUMP`:
+
 ```md
 1001 | 000000000000 |
 opcode | jump_to_12_bit_address for now
@@ -158,36 +169,42 @@ Any future instruction that carries an immediate/address field should follow the
 - out-of-range or non-decimal input should raise an `Invalid ... Expected a base-10 integer in range ...` error matching the extractor style.
 
 11. `DELETE`:
+
 ```md
 1010 | 00 | xxxxxxxxxx
 opcode | destination_register | dont-care values
 ```
 
 12. `AND`:
+
 ```md
 1011 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 13. `OR`:
+
 ```md
 1100 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 14. `NOT`:
+
 ```md
 1101 | 00 | 00 | xxxxxxxx
 opcode | store_at | operand_one | dont-care values
 ```
 
 15. `XOR`:
+
 ```md
 1110 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
 16. `HALT`:
+
 ```md
 1111 | xxxxxxxxxxxx
 opcode | dont-care values

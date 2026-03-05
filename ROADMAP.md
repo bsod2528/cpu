@@ -8,7 +8,7 @@
 ## Current project state (baseline)
 
 | Area | Component | Status |
-|---|---|---|
+| --- | --- | --- |
 | **Frontend RTL** | Program Counter | ✅ Implemented |
 | | Instruction Memory | ✅ Implemented |
 | | Instruction Decoder | ✅ Implemented |
@@ -41,7 +41,7 @@ tests remain before it can be considered production-ready.
 ### Week 1 — Complete missing ISA instructions
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 1.1 | Implement `STOREI` in the control unit — add a new FSM branch in the `EXECUTE` state that loads the 8-bit immediate directly into the destination register without passing through the ALU. | Updated `control_unit.sv` |
 | 1.2 | Add `STOREI` support to the assembler (`assembler.py` + `extractor.py`) so it encodes opcode `1000` with the register and 8-bit immediate fields. | Updated `assembler.py`, `extractor.py` |
 | 1.3 | Add a `pytest` test that round-trips `STOREI` through the assembler and verifies the correct binary encoding. | New test in `src/frontend/tb/` |
@@ -51,7 +51,7 @@ tests remain before it can be considered production-ready.
 ### Week 2 — Integration testing and bug fixes
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 2.1 | Run the full Python test suite (`pytest src/frontend/tb/test_*.py`) and fix any regressions. | Green CI |
 | 2.2 | Run RTL simulation (`./compile.sh && ./sim.sh`) with a program that exercises every implemented opcode at least once; record expected register values and add an assertion-based testbench. | New `tb_cpu_full_regression.v` |
 | 2.3 | Verify the HALT-state behaviour: once `HALT` is reached the CPU must stay halted until reset; add a specific testbench case for this. | Test in `tb_cpu.v` or a dedicated file |
@@ -61,7 +61,7 @@ tests remain before it can be considered production-ready.
 ### Week 3 — Toolchain polish
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 3.1 | Remove the legacy `new_cpu.v` draft file (it is superseded by `vr16_cpu.v`). | Deletion commit |
 | 3.2 | Add full `STOREI` and `DELETE` syntax to VRScript (`compiler.py`, `extractor.py`). | Updated compiler files |
 | 3.3 | Write a VRScript example that demonstrates `STOREI` and `DELETE`; place it in `examples/vrscript/`. | New `.vrs` example |
@@ -71,7 +71,7 @@ tests remain before it can be considered production-ready.
 ### Week 4 — Documentation, clean-up and v1.0 tag
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 4.1 | Update `CHANGELOG.md` with all Week 1 – 3 changes. | Updated `CHANGELOG.md` |
 | 4.2 | Update the `README.md` road-map section — mark *"finish basic CPU"* as complete. | Updated `README.md` |
 | 4.3 | Confirm `pytest` and RTL simulation both pass cleanly from a fresh environment (follow the README setup steps). | Verified clean run |
@@ -93,7 +93,7 @@ requires hazard handling.
 ### Week 5 — Pipeline architecture design
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 5.1 | Document the intended 4-stage pipeline (IF, ID, EX, WB) in a new `docs/pipeline.md` file, including a diagram of pipeline registers, forwarding paths, and stall/flush conditions. | New `docs/pipeline.md` |
 | 5.2 | Identify all data-hazard scenarios for the current ISA (RAW hazards are the primary concern because there are no memory operands yet). | Hazard table in `docs/pipeline.md` |
 | 5.3 | Identify all control-hazard scenarios — specifically how JUMP and HALT interact with a filled pipeline; decide on flush vs. stall policy. | Control-hazard section in `docs/pipeline.md` |
@@ -102,7 +102,7 @@ requires hazard handling.
 ### Week 6 — Implement pipeline registers
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 6.1 | Add `if_id_reg.v` — a synchronous register that latches the 16-bit raw instruction and the current PC value on every rising clock edge; supports a synchronous flush input. | New RTL file `src/frontend/rtl/if_id_reg.v` |
 | 6.2 | Add `id_ex_reg.v` — latches decoded fields (opcode, operands, immediate, store_at, select_operation) from the instruction decoder and control unit decode outputs. | New RTL file `src/frontend/rtl/id_ex_reg.v` |
 | 6.3 | Add `ex_wb_reg.v` — latches the ALU result, write-enable flag, and destination register address for the write-back stage. | New RTL file `src/frontend/rtl/ex_wb_reg.v` |
@@ -112,7 +112,7 @@ requires hazard handling.
 ### Week 7 — Hazard detection, forwarding and stall logic
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 7.1 | Implement a `hazard_unit.v` module that detects RAW data hazards by comparing the destination register of the instruction in EX/WB against the source registers of the instruction in ID/EX. | New RTL file `src/frontend/rtl/hazard_unit.v` |
 | 7.2 | Add a forwarding path: when a hazard is detected and the result is already available in the EX_WB register, route it directly to the ALU operand input (forward-from-EX). | Updated `vr16_cpu.v` forwarding mux |
 | 7.3 | When forwarding is not possible (e.g. back-to-back instructions with no intervening instruction), insert a pipeline bubble (NOP) by stalling the IF and ID stages for one cycle. | Stall logic in `hazard_unit.v` and PC |
@@ -135,7 +135,7 @@ is formally added to the repository.
 ### Week 8 — Synthesizability and backend bootstrapping
 
 | # | Task | Deliverable |
-|---|---|---|
+| --- | --- | --- |
 | 8.1 | Audit every RTL module for synthesis compatibility: remove or guard any simulation-only constructs (`$display`, `initial` blocks outside testbenches, non-synthesisable operators). | Clean RTL files |
 | 8.2 | Produce a synthesis-ready netlist for the pipelined VR16 core using a freely available open-source flow (e.g. Yosys + a generic standard-cell library or FPGA target). Document the steps in `docs/synthesis.md`. | `docs/synthesis.md` + Yosys script |
 | 8.3 | Add the CERN-OHL-S licence text to the repository (`LICENSE-CERN-OHL-S`) and update the `README.md` licensing section to reflect that the backend is now formally covered. | New licence file + updated `README.md` |
@@ -151,8 +151,7 @@ is formally added to the repository.
 
 ## Summary timeline
 
-```
-Month 1                                  Month 2
+```text
 Week 1   Week 2   Week 3   Week 4  |  Week 5   Week 6   Week 7   Week 8
 ──────────────────────────────────────────────────────────────────────────
 STOREI   Integ.   Toolchn  Docs &  |  Pipeline  Pipeline  Hazards  Synth &
