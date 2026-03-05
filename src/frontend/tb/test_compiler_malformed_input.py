@@ -42,7 +42,18 @@ def test_compiler_ignores_blank_and_comment_lines_before_reporting_error() -> No
     assert "Line 4" in compile_result.stdout
 
 
+def test_compiler_does_not_treat_for_prefixed_words_as_loop_headers() -> None:
+    for bad_header in ("format", "force", "forx"):
+        compile_result = run_compiler(f"{bad_header}\n")
+
+        assert compile_result.returncode != 0
+        assert "Compilation error:" in compile_result.stdout
+        assert "Line 1" in compile_result.stdout
+        assert "unsupported syntax" in compile_result.stdout
+
+
 if __name__ == "__main__":
     test_compiler_reports_line_number_for_unrecognized_statement()
     test_compiler_ignores_blank_and_comment_lines_before_reporting_error()
+    test_compiler_does_not_treat_for_prefixed_words_as_loop_headers()
     print("[PASS] test_compiler_malformed_input")
