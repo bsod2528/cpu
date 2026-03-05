@@ -26,6 +26,8 @@ assembler errors:
   programmer correct the typo.
 """
 
+from difflib import get_close_matches
+
 from colorama import Fore, Back, Style
 
 
@@ -86,6 +88,24 @@ class OpcodeNotPresent(Exception):
         1-based source line number where the bad opcode appeared.
     """
 
+    SUPPORTED_OPCODES: tuple[str, ...] = (
+        "add",
+        "addi",
+        "and",
+        "sub",
+        "subi",
+        "mul",
+        "muli",
+        "div",
+        "divi",
+        "delete",
+        "jump",
+        "halt",
+        "or",
+        "xor",
+        "not",
+    )
+
     def __init__(self, opcode: str, line: int):
         """Initialise with the bad opcode string and source line number."""
         super().__init__(opcode)
@@ -93,7 +113,7 @@ class OpcodeNotPresent(Exception):
         self.line = line
 
     def predict_opcode(self, opcode: str) -> list[str]:
-        """Return a list of valid opcodes that share the same starting letter.
+        """Return a list of valid opcode suggestions for a typo.
 
         Arguments:
         ----------
@@ -103,25 +123,27 @@ class OpcodeNotPresent(Exception):
         Returns:
         --------
         list[str]:
-            A list of candidate opcodes, or an empty list if no match found.
+            A list of candidate opcodes, or an empty list if no match is found.
         """
-        # Step 1: Match on the first character to produce a short candidate list.
-        if opcode.startswith("a"):
-            return ["add", "addi", "and"]
-        if opcode.startswith("s"):
-            return ["sub", "subi"]
-        if opcode.startswith("m"):
-            return ["mul", "muli"]
-        if opcode.startswith("d"):
-            return ["div", "divi", "delete"]
-        if opcode.startswith("j"):
-            return ["jump"]
-        if opcode.startswith("h"):
-            return ["halt"]
-        if opcode.startswith("o"):
-            return ["or", "xor"]
-        if opcode.startswith("n"):
-            return ["not"]
+        normalized_opcode = opcode.lower()
+
+        # Step 1: Start with close fuzzy matches across all supported opcodes.
+        suggestions = get_close_matches(
+            normalized_opcode,
+            self.SUPPORTED_OPCODES,
+            n=3,
+            cutoff=0.4,
+        )
+
+        # Step 2: If fuzzy matching finds nothing, fall back to first-letter hints.
+        if not suggestions:
+            suggestions = [
+                valid_opcode
+                for valid_opcode in self.SUPPORTED_OPCODES
+                if valid_opcode.startswith(normalized_opcode[:1])
+            ]
+
+        return suggestions
 
     def __str__(self) -> str:
         """Return a colourised error message with fuzzy-match suggestions."""
@@ -132,7 +154,7 @@ class OpcodeNotPresent(Exception):
         if opcode_suggestions:
             # Step 3: Format each suggestion with green colour for visibility.
             suggestion_text = (
-                "Did you mean: "
+                "\nDid you mean: "
                 + ", ".join(
                     [
                         Fore.GREEN + Style.BRIGHT + suggestion + Style.RESET_ALL
@@ -158,6 +180,6 @@ class OpcodeNotPresent(Exception):
             + Back.RED
             + f"{self.line}"
             + Style.RESET_ALL
-            + "!\n"
+            + "!"
             + suggestion_text
         )
