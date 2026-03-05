@@ -7,10 +7,6 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT_DIR / "src"
-INSTRUCTION_MEMORY_RTL = ROOT_DIR / "src" / "frontend" / "rtl" / "instruction_memory.v"
-
 from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,
@@ -21,6 +17,10 @@ from assembler.extractor import (
     extract_logic_main,
     extract_logic_side,
 )
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
+SRC_DIR = ROOT_DIR / "src"
+INSTRUCTION_MEMORY_RTL = ROOT_DIR / "src" / "frontend" / "rtl" / "instruction_memory.v"
 
 BINARY_16_RE = re.compile(r"^[01]{16}$")
 

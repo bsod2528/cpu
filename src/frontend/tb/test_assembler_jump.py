@@ -38,8 +38,6 @@ def test_jump_encodes_12bit_immediate() -> None:
     assert lines == ["1001000000001010", "1001111111111111"]
 
 
-
-
 def test_jump_rejects_non_integer_address() -> None:
     code = """start:
 jump bar
@@ -51,6 +49,7 @@ end:
     assert "Invalid jump address at line 2" in stdout
     assert "Expected a base-10 integer in range 0 to 4095" in stdout
     assert mem.strip() == ""
+
 
 def test_jump_rejects_out_of_range_immediate() -> None:
     code = """start:\njump 4096\nend:\n"""
