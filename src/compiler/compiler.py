@@ -40,6 +40,7 @@ from extractor import (
     extract_arithmetic,
     extract_for,
     extract_register_variables,
+    parse_for_header,
 )
 
 
@@ -136,7 +137,11 @@ def compile_source(source_path: Path, output_path: Path) -> None:
 
         # Step 4: Handle for-loop construct — parse the header, extract the
         #         body instruction, and unroll the loop `iterations` times.
-        if code.startswith("for"):
+        try:
+            parse_for_header(code)
+        except ValueError:
+            pass
+        else:
             loop_spec = extract_for(lines, list_index)
             loop_instruction = compile_loop_instruction(loop_spec)
             # Step 4a: Emit one copy of the body instruction per iteration.
