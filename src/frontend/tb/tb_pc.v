@@ -1,54 +1,133 @@
-// VR16: A basic 16-bit RISC processor
-// Copyright (C) 2025 Vishal Srivatsava AV
+// =============================================================================
+// File      : tb_pc.v
+// Module    : tb_pc
+// Brief     : Testbench for the program counter module.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
+// Description:
+//   Exercises all five control behaviours of the program counter in priority
+//   order and verifies the expected counter value and jump_done flag:
+//     1. Increment   — sequential execution advances the PC by 1 per cycle.
+//     2. Jump        — loading a target address and asserting jump_done.
+//     3. jump_done clear — jump_done de-asserts on the next cycle.
+//     4. Return      — restoring the pre-jump address.
+//     5. Halt flag   — forcing the PC to 0 when flag_input is asserted.
+//     6. Halt priority — halt takes priority over increment when both are high.
+// =============================================================================
 `timescale 1ns / 1ps
 
-
-module tb_pc();
-    reg jump_enable, return_enable, clk, reset;
+module tb_pc;
+    // -------------------------------------------------------------------------
+    // Stimulus inputs driven by the testbench.
+    // -------------------------------------------------------------------------
+    reg clk;
+    reg reset;
+    reg increment;
+    reg jump_enable;
+    reg return_enable;
+    reg flag_input;
     reg [15:0] jump_address;
+
+    // -------------------------------------------------------------------------
+    // Observed outputs from the DUT.
+    // -------------------------------------------------------------------------
+    wire jump_done;
     wire [15:0] counter_reg;
 
-    program_counter dut(
-        .counter_reg(counter_reg),
-        .jump_enable(jump_enable),
-        .jump_address(jump_address),
-        .return_enable(return_enable),
+    // Step 1: Instantiate the program counter as the DUT.
+    program_counter dut (
         .clk(clk),
-        .reset(reset)
+        .reset(reset),
+        .increment(increment),
+        .jump_enable(jump_enable),
+        .return_enable(return_enable),
+        .flag_input(flag_input),
+        .jump_address(jump_address),
+        .jump_done(jump_done),
+        .counter_reg(counter_reg)
     );
 
+    // Step 2: Free-running clock with 10 ns period.
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("dump.vcd");
-        $dumpvars(0, tb_pc);
+        // Step 3: Initialise all inputs to safe values and assert reset.
+        clk = 1'b0;
+        reset = 1'b1;
+        increment = 1'b0;
+        jump_enable = 1'b0;
+        return_enable = 1'b0;
+        flag_input = 1'b0;
+        jump_address = 16'h0000;
 
-        clk = 0;
-        reset = 1;
-        jump_enable = 0;
-        jump_address = 0;
-        return_enable = 0;
+        // Step 4: Release reset; PC should now be 0.
+        @(posedge clk);
+        reset = 1'b0;
 
-        #10 reset = 0;
+        // Step 5: Increment test — assert increment for 3 cycles then verify
+        //         the PC has advanced from 1 to 4 (reset cycle counts as 1).
+        increment = 1'b1;
+        repeat (3) @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd4) begin
+            $display("[FAIL] PC increment expected 4, got %0d", counter_reg);
+            $fatal(1);
+        end
 
-        #20 jump_enable = 1; jump_address = 16'b0011001100110011;
-        #10 jump_enable = 0;
-        #10 return_enable = 1;
-        #10 return_enable = 0;
-        #10 $finish;
+        // Step 6: Jump test — de-assert increment, apply a jump, and verify
+        //         the PC loads the target address with jump_done asserted.
+        increment = 1'b0;
+        jump_enable = 1'b1;
+        jump_address = 16'h0033;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'h0033 || jump_done !== 1'b1) begin
+            $display("[FAIL] PC jump expected 0x0033 and jump_done=1, got pc=%h jump_done=%b", counter_reg, jump_done);
+            $fatal(1);
+        end
+
+        // Step 7: jump_done clear — de-assert jump_enable and confirm
+        //         jump_done clears on the next cycle.
+        jump_enable = 1'b0;
+        @(posedge clk);
+        #1;
+        if (jump_done !== 1'b0) begin
+            $display("[FAIL] jump_done should clear after jump, got %b", jump_done);
+            $fatal(1);
+        end
+
+        // Step 8: Return test — assert return_enable and confirm the PC
+        //         restores the pre-jump address (4).
+        return_enable = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd4) begin
+            $display("[FAIL] PC return expected 4, got %0d", counter_reg);
+            $fatal(1);
+        end
+
+        // Step 9: Halt flag test — assert flag_input and confirm the PC
+        //         is forced to 0.
+        return_enable = 1'b0;
+        flag_input = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd0) begin
+            $display("[FAIL] PC halt flag expected 0, got %0d", counter_reg);
+            $fatal(1);
+        end
+
+        // HALT (flag_input) should take priority over increment when both are asserted.
+        // Step 10: Assert both flag_input and increment to confirm halt has higher priority.
+        flag_input = 1'b1;
+        increment = 1'b1;
+        @(posedge clk);
+        #1;
+        if (counter_reg !== 16'd0) begin
+            $display("[FAIL] HALT priority expected 0 with increment+flag high, got %0d", counter_reg);
+            $fatal(1);
+        end
+
+        $display("[PASS] tb_pc");
+        $finish;
     end
 endmodule

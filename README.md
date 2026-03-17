@@ -1,56 +1,173 @@
 # cpu
+
 [Documentation](https://bsod2528.github.io/pages/projects/vr16.html) | [Blogs](https://bsod2528.github.io/pages/tags.html#soc-dev)
 
-VR16, a basic RISC processor designed and written in verilog. As time permits, this will be made better and backend design will also be updated.
+VR16 is a basic RISC processor designed and written in Verilog. As time permits, this will be improved, and the backend design will also be updated.
 
-# Features
-- single stage cpu
+## Features
+
+- single-stage CPU
 - each instruction is 16-bit.
 - 4 general purpose registers (r0, r1, r2, r3).
-- runs on custom instruction set architecture called [vr-isa](ISA.md). 
-- `vr-asm` as assembly and `vrscript` for writing easier code to run on the cpu.
+- runs on a custom instruction set architecture called [VR16 ISA](ISA.md).
+- `VRASM` for assembly and `VRScript` for writing simpler code to run on the CPU.
 
 > [!WARNING]
-> The isa is very much work in progress, so things are subject to change.
-> Documentation for `vr-asm` and `vrscript` may or may not be up-to-date due to extensive prematurity of their presence. 
+> The ISA is still a work in progress, so details are subject to change.
+> Documentation for `VRASM` and `VRScript` may not always be up to date because these tools are still in an early stage.
 
-# Setup
-On how to run this project in your local machine. 
+## Setup
 
-## Windows
-1. Install WSL and install `gtkwave` and `iverilog`.
-2. Setup venv in root directory. 
-3. Run `./compile.sh` and then `./sim.sh` to view the rtl waveforms.
+How to run this project on your local machine.
 
-## Linux
-1. Install `gtkwave` and `iverilog`.
-2. Setup venv in root directory.
-3. Run `./compile.sh` and then `./sim.sh` to view the rtl waveforms.
+## Python environment (required for assembler/compiler + helper scripts)
 
-# Road-Map
+- Tested with Python `3.10` to `3.12`.
+
+Create and activate a virtual environment from the repo root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## RTL simulation prerequisites (`compile.sh` / `sim.sh`)
+
+Install the simulator + waveform viewer:
+
+- `iverilog`
+- `gtkwave`
+
+Then run:
+
+```bash
+./compile.sh
+./sim.sh
+```
+
+## Assembler/compiler-only usage (no RTL simulation)
+
+If you only want to use the toolchain (`VRASM` / `VRScript`), you only need the Python setup above (virtual environment + `pip install -r requirements.txt`).
+`iverilog` and `gtkwave` are not required unless you plan to run `./compile.sh` / `./sim.sh`.
+
+## Verification
+
+### Python testbench checks (`pytest`)
+
+Frontend Python testbench regressions live under `src/frontend/tb/test_*.py` and are expected to be run with `pytest` from the repository root:
+
+```bash
+pytest src/frontend/tb/test_*.py
+```
+
+### RTL simulation checks (`compile.sh` + `sim.sh`)
+
+For RTL flow validation, run the simulation scripts in order:
+
+```bash
+./compile.sh
+./sim.sh
+```
+
+### Minimal checks by change type
+
+- **Documentation-only changes:** verify markdown renders cleanly and perform a quick sanity read-through of edited sections.
+- **Code changes (RTL/toolchain/tests/scripts):** run both Python tests (`pytest src/frontend/tb/test_*.py`) and the RTL simulation flow (`./compile.sh` then `./sim.sh`) before opening a PR.
+
+### Environment constraints
+
+If hardware tooling is unavailable in your environment (for example, missing `iverilog`/`gtkwave` or restricted execution), document what was skipped and why in your PR notes, and still run the checks that are available (such as `pytest`).
+
+## Quickstart
+
+Run the full flow in this order:
+
+1. Compile `examples/vrscript/add.vrs` to `examples/vr-asm/compiled.asm`:
+   ```bash
+   PYTHONPATH=src python3 -m compiler examples/vrscript/add.vrs examples/vr-asm/compiled.asm
+   ```
+2. Assemble `examples/vr-asm/compiled.asm` into `mem/imem.mem`:
+   ```bash
+   PYTHONPATH=src python3 -m assembler examples/vr-asm/compiled.asm mem/imem.mem
+   ```
+3. Build and run the RTL simulation:
+   ```bash
+   ./compile.sh
+   ./sim.sh
+   ```
+4. Expected output artifacts after running the steps above:
+   - `mem/imem.mem`
+   - `output.out`
+   - `dump.vcd`
+
+## Troubleshooting
+
+- **Symptom:** `ModuleNotFoundError` when running `python3 -m assembler` or `python3 -m compiler`.
+  **Likely cause:** Python cannot find the project modules because `src/` is not on `PYTHONPATH`.
+  **Fix:** Run commands with `PYTHONPATH=src`, for example:
+  `PYTHONPATH=src python3 -m assembler examples/vr-asm/compiled.asm mem/imem.mem`.
+
+- **Symptom:** `iverilog: command not found` or `gtkwave: command not found`.
+  **Likely cause:** RTL simulation tools are not installed (or not on your shell `PATH`).
+  **Fix:** Install `iverilog` and `gtkwave`, then verify they are available with `iverilog -V` and `gtkwave --version`.
+
+- **Symptom:** `sim.sh` fails because `output.out` is missing.
+  **Likely cause:** `./compile.sh` was not run first, so the simulation binary/output target was never generated.
+  **Fix:** Run `./compile.sh` before `./sim.sh` each time you clean outputs or change build artifacts.
+
+- **Symptom:** `mem/imem.mem` is empty or does not change after assembly.
+  **Likely cause:** Malformed assembly boundaries, especially missing/misplaced `start:` and `end:` delimiters, so no instructions are emitted.
+  **Fix:** Ensure your ASM has a valid `start:`...`end:` region containing instructions, then re-run the assembler command.
+
+## Road-Map
+
 - [ ] finish basic cpu
 - [ ] pipeline it
 - [ ] finish physical design
 
 As of `13-10-2025` basic cpu is 90% done, just a bit more debugging is needed.
 
-# Basic docs for VRASM and VRSCRIPT
+## Basic docs for VRASM and VRScript
+
 ## VRASM
-1. Actual `programs` start generating machine code by starting the code with `start:`, similary to stop generating machine code use `end:`.
+
+1. Programs begin generating machine code when the code starts with `start:`. To stop generating machine code, use `end:`.
 2. Comments can be made using `--`.
-3. For program syntax, kindly refer [isa.md](./ISA.md)
+3. For program syntax, refer to [ISA.md](./ISA.md).
+4. Default assembler output is `mem/imem.mem`, which matches the RTL instruction memory path.
+   - Module entrypoint (recommended): `PYTHONPATH=src python3 -m assembler examples/vr-asm/add.asm mem/imem.mem`
+   - Script entrypoint (also supported): `PYTHONPATH=src python3 src/assembler/assembler.py examples/vr-asm/add.asm mem/imem.mem`
 
-## VRSCRIPT
-1. Variables: `<var_name> = <int>`
-2. All instructions are accessed by calling respective functions: `<instruction>(<arg>, [arg])`
-3. Iterative loops will be coming soon.
+## VRScript
 
-# Licensing
+1. Comments can be made using ` `` ` (double backtick).
+2. Register assignments: `<register> = <int>` — only `r0`, `r1`, `r2`, `r3` are valid left-hand sides.
+3. Arithmetic calls: `<instruction>(<store_at>, <operand_one>, <operand_two>)` — supported instructions are `add`, `sub`, `mul`, `div`.
+4. For loops: `for <var> in <n> { <reg> <op> <value> }` — runs the body `n` times.
+   - `<n>` must be an integer in range `0..VR16_MAX_FOR_LOOP_ITERATIONS` (default max: `10000`) to prevent huge compile-time unroll output.
+   - Supported loop body operators: `++` → `addi`, `--` → `subi`, `**` → `muli`, `//` → `divi`.
+   - Example: `for i in 4 { r3 ++ 2 }` emits `addi r3, 2;` four times.
+5. Compile a script with module entrypoint: `PYTHONPATH=src python3 -m compiler examples/vrscript/add.vrs examples/vr-asm/compiled.asm`
+6. Script entrypoint is also supported: `PYTHONPATH=src python3 src/compiler/compiler.py examples/vrscript/add.vrs examples/vr-asm/compiled.asm`
+7. For regression examples, see `examples/vrscript/loop_fixture.vrs` and `examples/vr-asm/loop_fixture_expected.asm`.
+
+## Licensing
+
 There are three parts to this CPU:
+
 - frontend
 - backend
 - toolchain
 
-1. Frontend deals with the synthesizable code written in verilog, the rtl and the corresponding testbenches, which are licensed under `GPLv3`. 
-2. Backend (will start soon) deals with the actual physical design of the cpu, which will be licensed under the `CERN-OHL-S`.
-3. Toolchain deals with the software side of the project, the `src/assembler/` and `src/compiler/` which makes programming on the CPU, which also come under `GPLv3`. 
+## Current licensing (effective now)
+
+1. Frontend (synthesizable Verilog RTL and testbenches) is licensed under `GPLv3`.
+2. Toolchain (`src/assembler/` and `src/compiler/`) is licensed under `GPLv3`.
+
+The canonical and legally effective license terms are in the repository's [`LICENSE`](./LICENSE) file.
+
+## Planned future licensing (not yet effective)
+
+1. Backend (physical design work) is planned to be licensed under `CERN-OHL-S`.
+2. `CERN-OHL-S` is **not currently in effect** for this repository until its full license text is added to the repo and formally adopted.

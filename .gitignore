@@ -1,6 +1,7 @@
 *.out
 *.vcd
 env
+.venv
 __pycache__
 imem.mem
 build

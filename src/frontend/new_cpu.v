@@ -16,24 +16,45 @@
 
 `timescale 1ns / 1ps
 
+// =============================================================================
+// File      : new_cpu.v
+// Module    : vr16_cpu  (draft / work-in-progress)
+// Brief     : Early-stage top-level module for the VR16 processor.
+//
+// Description:
+//   This is a skeletal draft of the VR16 CPU top-level.  It instantiates the
+//   program counter, instruction memory, and a stub instruction decoder with
+//   an unconnected instruction port.  Signal widths on several wires are not
+//   yet correct (e.g. pc_ip_jump_address is 1-bit; will be 16-bit in the
+//   final design).
+//
+//   Refer to `vr16_cpu.v` for the current complete implementation.
+//
+// Inputs:
+//   global_clk   - Master clock.
+//   global_reset - Active-high reset.
+// =============================================================================
 
 module vr16_cpu(
     input wire global_clk,
     input wire global_reset
 );
 
-    wire pc_ip_increment;
-    wire pc_ip_jump_enable;
-    wire pc_ip_jump_address;
-    wire pc_ip_return_enable;
-    wire pc_ip_flag_input;
-    wire pc_op_jump_done;
-    wire pc_op_counter_reg;
+    // Internal wires connecting the program counter sub-module.
+    wire pc_ip_increment;      // PC increment enable (not yet driven).
+    wire pc_ip_jump_enable;    // PC jump enable (not yet driven).
+    wire pc_ip_jump_address;   // Jump target address — NOTE: should be [15:0].
+    wire pc_ip_return_enable;  // Return enable (not yet driven).
+    wire pc_ip_flag_input;     // HALT flag (not yet driven).
+    wire pc_op_jump_done;      // Jump-done acknowledgement from the PC.
+    wire pc_op_counter_reg;    // PC output — NOTE: should be [15:0].
 
-    wire im_ip_enable;
-    wire im_ip_address;
-    wire im_op_instruction;
+    // Internal wires connecting the instruction memory sub-module.
+    wire im_ip_enable;         // IMEM read enable (not yet driven).
+    wire im_ip_address;        // IMEM address — NOTE: should be [15:0].
+    wire im_op_instruction;    // IMEM instruction output — NOTE: should be [15:0].
     
+    // Step 1: Instantiate the program counter.
     program_counter vr16_pc(
         .clk(global_clk),
         .reset(global_reset),
@@ -46,6 +67,7 @@ module vr16_cpu(
         .counter_reg(pc_op_counter_reg)
     );
 
+    // Step 2: Instantiate instruction memory.
     instruction_memory vr16_im(
         .clk(global_clk),
         .reset(global_reset),
@@ -54,6 +76,7 @@ module vr16_cpu(
         .instruction(im_op_instruction)
     );
 
+    // Step 3: Instantiate instruction decoder (instruction port not yet connected).
     instruction_decoder vr16_id(
         .clk(global_clk),
         .reset(global_reset),
