@@ -48,7 +48,9 @@ module alu(
     input wire clk,
     input wire reset,
     input wire alu_enable,
+    input wire shift_dir,
     input wire [3:0] opcode,
+    input wire [8:0] shift_amount,
     input wire [15:0] operand_one,
     input wire [15:0] operand_two,
 
@@ -80,6 +82,12 @@ module alu(
                 4'b0110: result <= operand_one / operand_two;   // DIV
                 4'b0111: result <= operand_one / operand_two;   // DIVI - good thing `immediate values` weren't named absolute values, otherwise this would've been DIVA *winks*. It's a joke.
                 // Saint: Ha! DIVA would have been a legendary opcode name.
+                4'b1000: begin // SHIFT
+                    if (shift_dir == 1'b0)
+                        result <= operand_one << shift_amount; // left shift
+                    else
+                        result <= operand_one >> shift_amount; // right shift
+                end
                 4'b1011: result <= operand_one & operand_two;   // AND
                 4'b1100: result <= operand_one | operand_two;   // OR
                 4'b1101: result <= ~operand_one;                // NOT - only operand_one is used; operand_two is ignored.

@@ -75,7 +75,7 @@ module vr16_cpu #(
     wire [1:0] id_operand_one_op;       // Source register 1 address.
     wire [1:0] id_operand_two_op;       // Source register 2 address.
     wire [1:0] id_store_at_op;          // Destination register address.
-    wire [1:0] id_reg_to_work_on_op;    // Register for STOREI / DELETE ops.
+    wire [1:0] id_reg_to_work_on_op;    // Register for CJMP condition check.
     wire [3:0] id_opcode_op;            // 4-bit opcode.
     wire [15:0] id_imm_value_op;        // Zero-extended immediate value.
     wire [15:0] id_six_bit_dont_care_op;   // Lower 6 don't-care bits (debug).
@@ -96,6 +96,8 @@ module vr16_cpu #(
     wire [1:0] cu_reg_read_address_two_op; // Read port 2 address for the reg file.
     wire [15:0] cu_operand_two_out_op;  // Immediate forwarded from CU to ALU mux.
     wire [15:0] cu_jump_address_out_op; // Jump target forwarded from CU to PC.
+    wire        cu_shift_dir_op;        // SHIFT direction: 0=SHL, 1=SHR.
+    wire [8:0]  cu_shift_amount_op;     // SHIFT amount (9-bit).
 
     // -----------
     // alu signals
@@ -113,6 +115,17 @@ module vr16_cpu #(
     wire [15:0] gpr_reg_d_out_op;    // Current value of r3.
     wire [15:0] gpr_operand_one_reg_op; // Combinational read of operand 1.
     wire [15:0] gpr_operand_two_reg_op; // Combinational read of operand 2.
+
+    // CJMP: mux the correct register value based on reg_to_work_on for condition check.
+    wire [15:0] cu_reg_val_ip;
+    assign cu_reg_val_ip =
+        (id_reg_to_work_on_op == 2'b00) ? gpr_reg_a_out_op :
+        (id_reg_to_work_on_op == 2'b01) ? gpr_reg_b_out_op :
+        (id_reg_to_work_on_op == 2'b10) ? gpr_reg_c_out_op :
+                                           gpr_reg_d_out_op;
+    // CJMP condition bits come from ten_bit_dont_care[1:0] out of the decoder.
+    wire [1:0] cu_cjmp_condition_ip;
+    assign cu_cjmp_condition_ip = id_ten_bit_dont_care_op[1:0];
 
     // -------------------------------------------------------------------------
     // default connections
@@ -189,6 +202,8 @@ module vr16_cpu #(
         .opcode(id_opcode_op),
         .immediate_value(id_imm_value_op),
         .jump_address(id_jump_address_input_op),
+        .reg_val(cu_reg_val_ip),
+        .cjmp_condition(cu_cjmp_condition_ip),
         .enable_alu(cu_enable_alu_op),
         .enable_reg_write(cu_enable_reg_write_op),
         .enable_pc_increment(cu_enable_pc_increment_op),
@@ -198,7 +213,9 @@ module vr16_cpu #(
         .reg_read_address_one(cu_reg_read_address_one_op),
         .reg_read_address_two(cu_reg_read_address_two_op),
         .operand_two_out(cu_operand_two_out_op),
-        .jump_address_out(cu_jump_address_out_op)
+        .jump_address_out(cu_jump_address_out_op),
+        .shift_dir(cu_shift_dir_op),
+        .shift_amount(cu_shift_amount_op)
     );
 
     alu vr16_alu(
@@ -208,6 +225,8 @@ module vr16_cpu #(
         .opcode(id_opcode_op),
         .operand_one(gpr_operand_one_reg_op),
         .operand_two(alu_operand_two),
+        .shift_dir(cu_shift_dir_op),
+        .shift_amount(cu_shift_amount_op),
         .result(a_result_op),
         .alu_done(a_alu_done_op)
     );

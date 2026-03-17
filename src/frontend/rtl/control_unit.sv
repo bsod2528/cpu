@@ -79,34 +79,51 @@ module control_unit(
     input wire [15:0] immediate_value,
     input wire [15:0] jump_address,
 
+    // CJMP: value of the register being tested + condition bits from decoder
+    input wire [15:0] reg_val,         // R[reg_to_work_on] read from register file
+    input wire [1:0]  cjmp_condition,  // ten_bit_dont_care[1:0] from decoder
+
     // output signals
     output reg enable_alu,
     output reg enable_reg_write,
     output reg enable_pc_increment,
     output reg enable_jump,
-    output reg [1:0] select_operation, // 00 == register alone, 01 == immediate alone, 10 == register + immediate
+    output reg [1:0] select_operation,
 
     // data path controls
     output reg [1:0] reg_write_address,
     output reg [1:0] reg_read_address_one,
     output reg [1:0] reg_read_address_two,
-    output reg [15:0] operand_two_out, // sometimes operand_two is an immediate value, so yeah this takes care of that.
-    output reg [15:0] jump_address_out
+    output reg [15:0] operand_two_out,
+    output reg [15:0] jump_address_out,
+
+    // SHIFT: fed directly to ALU
+    output reg [8:0]  shift_amount,    // how many positions to shift
+    output reg        shift_dir        // 0 = SHL, 1 = SHR
 );
 
     // -------------------------------------------------------------------------
     // FSM state encoding — using SystemVerilog enum for readability and safety.
     // -------------------------------------------------------------------------
+    
+    // the decimal (base-10) numbers commented next to each state is given
+    // for easier verification of state of cpu while viewing waveforms.
     typedef enum logic [2:0] {
-        FETCH = 3'b000,
-        DECODE = 3'b001,
-        EXECUTE = 3'b010,
-        WRITE = 3'b011,
-        JUMP = 3'b100,
-        HALT = 3'b111
+        FETCH = 3'b000,     // 0
+        DECODE = 3'b001,    // 1
+        EXECUTE = 3'b010,   // 2
+        WRITE = 3'b011,     // 3
+        JUMP = 3'b100,      // 4
+        HALT = 3'b111       // 7
     } state_t;
 
     state_t current_state, next_state;
+
+    // do_cjmp_reg: registered version — holds the condition result from EXECUTE
+    // into the JUMP state so it doesn't get wiped by the combinational default.
+    // next_do_cjmp: combinational value computed in always@(*), latched on clock edge.
+    reg do_cjmp_reg;
+    reg next_do_cjmp;
 
     // -------------------------------------------------------------------------
     // Retained original parameter-style definitions for reference (unused now).
@@ -125,10 +142,13 @@ module control_unit(
     // On reset, unconditionally return to FETCH (the pipeline start state).
     // -------------------------------------------------------------------------
     always @ (posedge clk or posedge reset) begin
-        if (reset)
+        if (reset) begin
             current_state <= FETCH;
-        else
+            do_cjmp_reg   <= 1'b0;
+        end else begin
             current_state <= next_state;
+            do_cjmp_reg   <= next_do_cjmp;
+        end
     end
 
     // always @(posedge clk or posedge reset) begin
@@ -153,6 +173,9 @@ module control_unit(
         enable_pc_increment = 1'b0;
         select_operation = 2'b00;
         next_state = current_state;
+        next_do_cjmp = 1'b0;
+        shift_amount = 9'b0;
+        shift_dir    = 1'b0;
 
         // Step 2: Route decoder outputs directly to the data-path controls.
         reg_write_address = store_at;
@@ -212,8 +235,34 @@ module control_unit(
 
                     // -- Jump instruction --
                     // Step 3c: Move directly to JUMP state; no ALU needed.
-                    // jump
                     4'b1001: next_state = JUMP;
+
+                    // -- SHIFT instruction --
+                    // imm_value[9] = shift_dir, imm_value[8:0] = shift_amount
+                    4'b1000: begin
+                        enable_alu   = 1'b1;
+                        select_operation = 2'b00;
+                        shift_dir    = immediate_value[9];
+                        shift_amount = immediate_value[8:0];
+                        if (alu_done)
+                            next_state = WRITE;
+                        else
+                            next_state = EXECUTE;
+                    end
+
+                    // -- CJMP instruction (conditional jump) --
+                    // Evaluate condition against reg_val, then go to JUMP state.
+                    // do_cjmp tells JUMP whether to actually load PC or just increment.
+                    4'b1010: begin
+                        case (cjmp_condition)
+                            2'b00: next_do_cjmp = (reg_val == 16'h0000);       // JEQ
+                            2'b01: next_do_cjmp = (reg_val != 16'h0000);       // JNE
+                            2'b10: next_do_cjmp = ($signed(reg_val) > 0);      // JGT
+                            2'b11: next_do_cjmp = ($signed(reg_val) < 0);      // JLT
+                            default: next_do_cjmp = 1'b0;
+                        endcase
+                        next_state = JUMP;
+                    end
 
                     // -- Halt instruction --
                     // Step 3d: Enter terminal HALT state.
@@ -253,14 +302,22 @@ module control_unit(
             end
 
             // ------------------------------------------------------------------
-            // JUMP: Assert enable_jump so the PC loads the target address.
-            //       Stay here until the PC signals jump_done, then return to FETCH.
+            // JUMP: Handles both unconditional JUMP (1001) and CJMP (1010).
+            //   - JUMP (1001):  always loads PC with jump target.
+            //   - CJMP (1010):  loads PC only if do_cjmp was set in EXECUTE,
+            //                   otherwise just increments PC and returns to FETCH.
             // ------------------------------------------------------------------
             JUMP: begin
-                // Step 3h: Drive the jump enable until the PC confirms completion.
-                enable_jump = 1'b1;
-                if (jump_done)
+                if (opcode == 4'b1010 && !do_cjmp_reg) begin
+                    // Condition was false — skip jump, advance normally
+                    enable_pc_increment = 1'b1;
                     next_state = FETCH;
+                end else begin
+                    // Unconditional jump OR condition was true
+                    enable_jump = 1'b1;
+                    if (jump_done)
+                        next_state = FETCH;
+                end
             end
 
             // ------------------------------------------------------------------

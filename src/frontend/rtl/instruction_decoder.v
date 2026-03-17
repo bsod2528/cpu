@@ -58,10 +58,10 @@
 // | 0000 | 00 | 00 | 00 | 00 | 0000 |
 // | opcode | reg a | reg b | reg c | reg d | immediate value |
 
-// Yeah so the above is generic split up, the format will change according to the `opcode`
-// Refer to `ISA.md` on root directory to see the split-up / IS format for each opcode.
+// bsod2528: Yeah so the above is generic split up, the format will change according to the `opcode`
+// bsod2528: Refer to `ISA.md` on root directory to see the split-up / IS format for each opcode.
 
-// MISC: It's 22-06-2025 as of me re-reading this, idk what i've done :skull:
+// bsod2528: MISC: It's 22-06-2025 as of me re-reading this, idk what i've done :skull:
 // Saint: You've built a working instruction decoder — that's what you've done!
 module instruction_decoder(
     input wire clk,
@@ -176,21 +176,20 @@ module instruction_decoder(
                     operand_two = 2'b00;               // unused for immediate arithmetic encoding
                     imm_value = {6'b000_000, instruction[9:0]};
                 end
-                4'b1000: begin // STOREI
-                    // R[reg_to_work_on] <- zero_extend(imm8)
-                    // Note: Not yet implemented in the control unit; see ISA.md.
-                    reg_to_work_on = instruction[9:8];
-                    imm_value = {8'b0000_0000, instruction[7:0]};
+                4'b1000: begin // SHIFT
+                    store_at = instruction[11:10];
+                    imm_value = {6'b0, instruction[9], instruction[8:0]};
                 end
                 4'b1001: begin // JUMP
                     // PC <- zero_extend(instruction[11:0])
                     jump_address_input = {4'b0, instruction[11:0]};
                 end
-                4'b1010: begin // DELETE
-                    // Clears the register addressed by reg_to_work_on.
+                4'b1010: begin // CJMP (conditional jump)
                     reg_to_work_on = instruction[11:10];
-                    ten_bit_dont_care = {6'b0, instruction[9:0]};
+                    imm_value      = {8'b0, instruction[7:0]};
+                    ten_bit_dont_care = {14'b0, instruction[9:8]};
                 end
+
                 4'b1011: begin // AND
                     // R[store_at] <- R[operand_one] & R[operand_two]
                     store_at = instruction[11:10];
