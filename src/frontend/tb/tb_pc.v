@@ -13,7 +13,9 @@
 //     5. Halt flag   — forcing the PC to 0 when flag_input is asserted.
 //     6. Halt priority — halt takes priority over increment when both are high.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_pc;
     // -------------------------------------------------------------------------
@@ -50,6 +52,9 @@ module tb_pc;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_pc);
+
         // Step 3: Initialise all inputs to safe values and assert reset.
         clk = 1'b0;
         reset = 1'b1;

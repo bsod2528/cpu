@@ -52,7 +52,7 @@
 //   counter_reg - Current 16-bit program counter value (instruction address).
 // =============================================================================
 
-// I've been spamming can you hear the music while doing this HAHA.
+// bsod2528: I've been spamming can you hear the music while doing this HAHA.
 // Saint: The best debugging sessions always have a good soundtrack. Respect.
 module program_counter(
     input wire clk,

@@ -11,7 +11,9 @@
 //     3. ADDI r1, 3      — immediate arithmetic encoding.
 //     4. JUMP 10         — jump address encoding.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_id;
     // -------------------------------------------------------------------------
@@ -57,6 +59,9 @@ module tb_id;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_id);
+        
         // Step 3: Initialise inputs and assert reset.
         clk = 1'b0;
         reset = 1'b1;

@@ -45,10 +45,10 @@
 //   instruction - 16-bit instruction word read from the memory array.
 // =============================================================================
 
-// Instruction memory, it stores all the instructions that I set. Basically my actual instruction-set for what I'm creating.
-// Gonna name this v-risc cause :moyai:
-// Have to mention the inspiration for this: https://www.edaplayground.com/x/iCVx
-// Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
+// bsod2528: Instruction memory, it stores all the instructions that I set. Basically my actual instruction-set for what I'm creating.
+// bsod2528: Gonna name this v-risc cause :moyai:
+// bsod2528: Have to mention the inspiration for this: https://www.edaplayground.com/x/iCVx
+// bsod2528: Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
 // Saint: Great acknowledgement — crediting inspiration is good engineering culture.
 
 module instruction_memory #(

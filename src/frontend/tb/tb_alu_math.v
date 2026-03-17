@@ -11,7 +11,9 @@
 //   immediate-mode arithmetic paths, overflow/underflow edge cases, and
 //   division-by-zero behaviour (expected to produce unknown/X bits).
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_alu_math;
     // -------------------------------------------------------------------------
@@ -89,6 +91,9 @@ module tb_alu_math;
     endtask
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_alu_math);
+        
         // Step 8: Initialise all inputs to known states before releasing reset.
         clk = 1'b0;
         reset = 1'b1;

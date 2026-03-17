@@ -10,7 +10,9 @@
 //     3. Returns the correct 16-bit instruction word at address 1.
 //   The expected values match the first two entries in the default `.mem` file.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_imem;
     // -------------------------------------------------------------------------
@@ -40,6 +42,9 @@ module tb_imem;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_imem);
+        
         // Step 3: Initialise all inputs and hold reset.
         clk = 1'b0;
         reset = 1'b1;

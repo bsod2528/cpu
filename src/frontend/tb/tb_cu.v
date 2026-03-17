@@ -10,7 +10,9 @@
 //     3. JUMP — verifies jump enable and address forwarding to the PC.
 //   State transitions are validated by checking output signals at each FSM step.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_cu;
     // -------------------------------------------------------------------------
@@ -73,6 +75,9 @@ module tb_cu;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_cu);
+    
         // Step 3: Initialise all inputs before releasing reset.
         clk = 1'b0;
         reset = 1'b1;

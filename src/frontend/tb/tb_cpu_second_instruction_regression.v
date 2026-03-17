@@ -13,7 +13,9 @@
 //   This was added as a regression guard after a bug where only the first
 //   instruction executed correctly and subsequent instructions were skipped.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_cpu_second_instruction_regression;
     // Testbench stimulus registers.
@@ -21,8 +23,18 @@ module tb_cpu_second_instruction_regression;
     reg reset;
 
     // Step 1: Instantiate the VR16 CPU with the regression-specific `.mem` file.
+    
+    // bsod2528: contents of mem file:
+    //
+    // 0001000000000001
+    // 0001010000000010
+    // 0000100001000000
+    // 1111000000000000
+    //
+    // update the `mem/imem.mem` with the above binary.
+    
     vr16_cpu #(
-        .IMEM_FILE("src/frontend/tb/data/imem_second_instruction_regression.mem")
+        .IMEM_FILE("mem/imem.mem")
     ) uut (
         .global_clk(clk),
         .global_reset(reset)
@@ -32,6 +44,9 @@ module tb_cpu_second_instruction_regression;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_cpu_second_instruction_regression);
+        
         // Step 3: Initialise and assert reset for one cycle.
         clk = 1'b0;
         reset = 1'b1;

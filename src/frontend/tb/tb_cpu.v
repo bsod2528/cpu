@@ -10,6 +10,7 @@
 //   No explicit pass/fail assertions are made here; correctness is verified
 //   by visual waveform inspection or by the more targeted unit testbenches.
 // =============================================================================
+
 `timescale 1ns / 1ps
 
 

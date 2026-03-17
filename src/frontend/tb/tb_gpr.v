@@ -13,7 +13,9 @@
 //        to the correct registers after write_enable is de-asserted.
 //     5. Unknown selector — confirm zero is returned for X-valued addresses.
 // =============================================================================
+
 `timescale 1ns / 1ps
+
 
 module tb_gpr;
     // -------------------------------------------------------------------------
@@ -60,6 +62,9 @@ module tb_gpr;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_gpr);
+        
         // Step 3: Initialise all inputs to safe values and assert reset.
         clk = 1'b0;
         reset = 1'b1;
