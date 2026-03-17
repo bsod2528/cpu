@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
-"""Base exception classes for the VR16 assembler.
+"""
+Base exception classes for the VR16 assembler.
 
 Provides colourised, human-readable error messages for two categories of
 assembler errors:
@@ -28,11 +29,12 @@ assembler errors:
 
 from difflib import get_close_matches
 
-from colorama import Fore, Back, Style
+from colorama import Back, Fore, Style
 
 
 class RegisterNotPresent(Exception):
-    """Raised when an assembly instruction references an undefined register.
+    """
+    Raised when an assembly instruction references an undefined register.
 
     The VR16 ISA only has four general-purpose registers: r0, r1, r2, r3.
     Any other register name triggers this exception.
@@ -74,7 +76,8 @@ class RegisterNotPresent(Exception):
 
 
 class OpcodeNotPresent(Exception):
-    """Raised when an assembly instruction uses an unrecognised opcode.
+    """
+    Raised when an assembly instruction uses an unrecognised opcode.
 
     In addition to reporting the bad opcode, :meth:`predict_opcode` attempts
     to suggest valid opcodes that start with the same letter, giving the
@@ -91,19 +94,20 @@ class OpcodeNotPresent(Exception):
     SUPPORTED_OPCODES: tuple[str, ...] = (
         "add",
         "addi",
-        "and",
         "sub",
         "subi",
         "mul",
         "muli",
         "div",
         "divi",
-        "delete",
-        "jump",
-        "halt",
+        "shift",
+        "jmp",
+        "cjmp",
+        "and",
         "or",
-        "xor",
         "not",
+        "xor",
+        "halt",
     )
 
     def __init__(self, opcode: str, line: int):
@@ -113,7 +117,8 @@ class OpcodeNotPresent(Exception):
         self.line = line
 
     def predict_opcode(self, opcode: str) -> list[str]:
-        """Return a list of valid opcode suggestions for a typo.
+        """
+        Return a list of valid opcode suggestions for a typo.
 
         Arguments:
         ----------
@@ -127,7 +132,7 @@ class OpcodeNotPresent(Exception):
         """
         normalized_opcode = opcode.lower()
 
-        # Step 1: Start with close fuzzy matches across all supported opcodes.
+        # Saint2706: Start with close fuzzy matches across all supported opcodes.
         suggestions = get_close_matches(
             normalized_opcode,
             self.SUPPORTED_OPCODES,
@@ -135,7 +140,7 @@ class OpcodeNotPresent(Exception):
             cutoff=0.4,
         )
 
-        # Step 2: If fuzzy matching finds nothing, fall back to first-letter hints.
+        # Saint2706: If fuzzy matching finds nothing, fall back to first-letter hints.
         if not suggestions:
             suggestions = [
                 valid_opcode
@@ -147,12 +152,10 @@ class OpcodeNotPresent(Exception):
 
     def __str__(self) -> str:
         """Return a colourised error message with fuzzy-match suggestions."""
-        # Step 2: Generate opcode suggestions for the error message.
         opcode_suggestions: list[str] = self.predict_opcode(self.opcode)
 
         suggestion_text = ""
         if opcode_suggestions:
-            # Step 3: Format each suggestion with green colour for visibility.
             suggestion_text = (
                 "\nDid you mean: "
                 + ", ".join(
@@ -166,6 +169,7 @@ class OpcodeNotPresent(Exception):
 
         return (
             Fore.YELLOW
+            + Style.BRIGHT
             + "WARNING"
             + Style.RESET_ALL
             + ": There is no such opcode "
@@ -182,4 +186,24 @@ class OpcodeNotPresent(Exception):
             + Style.RESET_ALL
             + "!"
             + suggestion_text
+        )
+
+
+class SourceNotFound(FileNotFoundError):
+    def __init__(self, source_file):
+        super().__init__(source_file)
+        self.source_file = source_file
+
+    def __str__(self) -> str:
+        return (
+            Fore.RED
+            + "ERROR"
+            + Style.RESET_ALL
+            + ": THere is no such file "
+            + Fore.BLACK
+            + Back.WHITE
+            + Style.BRIGHT
+            + str(self.source_file)
+            + Style.RESET_ALL
+            + "!"
         )

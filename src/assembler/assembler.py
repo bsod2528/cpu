@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https:#www.gnu.org/licenses/>.
 
-"""VR16 assembler: converts VR-ASM source files into binary `.mem` files.
+"""
+VR16 assembler: converts VR-ASM source files into binary `.mem` files.
 
 The assembler performs a single-pass translation of a VR-ASM text file into
 binary machine code understood by the VR16 instruction memory.
@@ -43,29 +44,35 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
-from assembler.baseclass import OpcodeNotPresent
-
+from assembler.baseclass import (
+    OpcodeNotPresent,
+    RegisterNotPresent,
+    SourceNotFound,
+)
 from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,
+    extract_conditional_jump,
     extract_immediate_arithmetic,
-    extract_logic_main,
-    extract_logic_side,
     extract_jump,
-    extract_delete,
-    extract_halt,
+    extract_logic_main,
+    extract_not,
+    extract_shift,
+    return_halt,
 )
 
-# As of date 23-04-25, it struck my mind that I have "duplicate" instructions.
-# `storei`: adds immediate value into a register, for some bizzare reason I've kept it as 8-bit.
-# The same thing is done by `addi`.
-# I'll change the ISA later on but uhh yeah :moyai:
+# bsod2528: As of date 23-04-25, it struck my mind that I have "duplicate" instructions.
+# bsod2528: `storei`: adds immediate value into a register, for some bizzare reason I've kept it as 8-bit.
+# bsod2528: The same thing is done by `addi`.
+# bsod2528: I'll change the ISA later on but uhh yeah :moyai:
 # Saint: Noted — STOREI vs ADDI duplication is tracked. When STOREI gets its
 # Saint: own semantics (e.g. absolute store, not accumulate) it will justify its slot.
+# bsod2528: ISA has been changed as of 13-03-2026.
 
 
 def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction | None:
-    """Parse a single source line into a :class:`ParsedInstruction` or ``None``.
+    """
+    Parse a single source line into a :class:`ParsedInstruction` or ``None``.
 
     Strips inline comments (everything after ``--``), trims whitespace, and
     tokenises the remainder.  Validates that the operand count matches the
@@ -91,30 +98,22 @@ def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction
     ValueError:
         When the operand count does not match the expected count for the opcode.
     """
-    # Step 1: Strip everything after the comment delimiter `--`.
     line_without_comment: str = raw_line.split("--", 1)[0]
-    # Step 2: Remove leading / trailing whitespace from the remaining text.
     trimmed_line: str = line_without_comment.strip()
-    # Step 3: Skip blank lines (comment-only lines become blank after step 1).
     if not trimmed_line:
         return None
 
-    # Step 4: Remove trailing semicolons and split into tokens.
     tokens: list[str] = trimmed_line.strip(";").split()
     if not tokens:
         return None
 
-    # Step 5: Handle special delimiter tokens (`start:` / `end:`) directly.
     if tokens[0] in ["start:", "end:"]:
         return ParsedInstruction(opcode=tokens[0], operands=[], line_number=line_number)
 
-    # Step 6: Strip commas from each token so `add r0, r1, r2` and
-    #         `add r0 r1 r2` are handled identically.
     cleaned_tokens: list[str] = [token.strip(",") for token in tokens]
     opcode: str = cleaned_tokens[0]
     operands: list[str] = cleaned_tokens[1:]
 
-    # Step 7: Look up the expected operand count for the opcode.
     expected_operands_by_opcode: dict[str, int] = {
         "add": 3,
         "sub": 3,
@@ -124,16 +123,16 @@ def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction
         "subi": 2,
         "muli": 2,
         "divi": 2,
+        "shift": 3,
+        "jmp": 1,
+        "cjmp": 3,
         "and": 3,
         "or": 3,
         "xor": 3,
         "not": 2,
-        "delete": 1,
         "halt": 0,
-        "jump": 1,
     }
 
-    # Step 8: Validate the operand count and raise a descriptive error on mismatch.
     if opcode in expected_operands_by_opcode:
         expected_operands: int = expected_operands_by_opcode[opcode]
         if len(operands) != expected_operands:
@@ -148,7 +147,8 @@ def parse_instruction_line(raw_line: str, line_number: int) -> ParsedInstruction
 
 
 def choose_extractor(instruction: ParsedInstruction) -> str | None:
-    """Select and invoke the correct extractor function for the given opcode.
+    """
+    Select and invoke the correct extractor function for the given opcode.
 
     Based on opcode, extraction is done.
 
@@ -167,29 +167,23 @@ def choose_extractor(instruction: ParsedInstruction) -> str | None:
     """
     opcode: str = instruction.opcode
 
-    # Step 1: Route arithmetic register-register operations.
     if opcode in ["add", "sub", "mul", "div"]:
         return extract_arithmetic(instruction)
-    # Step 2: Route arithmetic immediate operations.
     if opcode in ["addi", "subi", "muli", "divi"]:
         return extract_immediate_arithmetic(instruction)
-    # Step 3: Route control-flow — jump instruction.
-    if opcode == "jump":
+    if opcode == "shift":
+        return extract_shift(instruction)
+    if opcode == "jmp":
         return extract_jump(instruction)
-    # Step 4: Route register-clear operation.
-    if opcode == "delete":
-        return extract_delete(instruction)
-    # Step 5: Route two-operand logical operations.
+    if opcode == "cjmp":
+        return extract_conditional_jump(instruction)
     if opcode in ["and", "or", "xor"]:
         return extract_logic_main(instruction)
-    # Step 6: Route single-operand logical operation (NOT).
     if opcode == "not":
-        return extract_logic_side(instruction)
-    # Step 7: Route halt.
+        return extract_not(instruction)
     if opcode == "halt":
-        return extract_halt(instruction)
+        return return_halt(instruction)
 
-    # Step 8: Return None for unrecognised opcodes; the caller raises an error.
     return None
 
 
@@ -206,7 +200,8 @@ class AssemblerError(Exception):
 
 
 def assemble(source_path: str, output_path: str) -> None:
-    """Assemble a VR-ASM source file into a binary `.mem` output file.
+    """
+    Assemble a VR-ASM source file into a binary `.mem` output file.
 
     Reads the source file line by line, parses each instruction, and collects
     resulting 16-bit binary strings in memory. Only instructions between
@@ -228,23 +223,23 @@ def assemble(source_path: str, output_path: str) -> None:
     source = Path(source_path)
     output = Path(output_path)
 
-    # Step 1: Read all lines from the source file, stripping trailing newlines.
-    with source.open() as source_file:
-        lines: list[str] = [line.strip("\n") for line in source_file]
+    try:
+        with source.open() as source_file:
+            lines: list[str] = [line.strip("\n") for line in source_file]
+    except FileNotFoundError:
+        raise SourceNotFound(source) from None
 
-    # Step 2: Collect encoded machine-code lines in memory first.
-    #         This guarantees we never leave partially-written output on errors.
+    # Saint2706: Collect encoded machine-code lines in memory first.
+    # This guarantees we never leave partially-written output on errors.
     encoded_lines: list[str] = []
 
     total_lines: int = len(lines)
-    start_present: bool = False  # Tracks whether `start:` has been seen.
+    start_present: bool = False
     list_index: int = 0
 
-    # Step 3: Iterate through every source line.
     while list_index != total_lines:
         line_number: int = list_index + 1
         try:
-            # Step 4: Parse the current line into a structured instruction (or None).
             parsed_instruction: ParsedInstruction | None = parse_instruction_line(
                 lines[list_index], line_number
             )
@@ -261,38 +256,36 @@ def assemble(source_path: str, output_path: str) -> None:
             + Style.RESET_ALL
         )
 
-        # Step 5: Skip blank / comment-only lines.
         if parsed_instruction is None:
             list_index = list_index + 1
             continue
 
-        # Step 6: When `start:` is encountered, set the active encoding flag.
         if parsed_instruction.opcode == "start:":
             list_index = list_index + 1
             start_present = True
             continue
 
-        # Step 7: When `end:` is encountered, stop processing immediately.
         if parsed_instruction.opcode == "end:":
             break
 
-        # Step 8: Only encode instructions that appear inside start:/end: block.
         if start_present:
             try:
-                # Step 9: Delegate to the correct extractor and get binary string.
                 result = choose_extractor(parsed_instruction)
 
                 if result is None:
                     raise OpcodeNotPresent(parsed_instruction.opcode, line_number)
 
-                # Step 10: Save binary string in memory (one instruction per line).
                 encoded_lines.append(result)
-            except (OpcodeNotPresent, ValueError) as error:
+            except (
+                OpcodeNotPresent,
+                ValueError,
+                RegisterNotPresent,
+                SourceNotFound,
+            ) as error:
                 raise AssemblerError(line_number, str(error)) from error
 
         list_index = list_index + 1
 
-    # Step 11: Persist all encoded lines atomically-at-end after full success.
     final_text: str = "\n".join(encoded_lines)
     if encoded_lines:
         final_text = f"{final_text}\n"
