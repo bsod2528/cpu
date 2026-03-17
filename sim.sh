@@ -15,13 +15,7 @@
 # Usage:
 #   ./sim.sh
 # =============================================================================
-
-# Step 1: Clear the terminal for a clean simulation output.
 clear
 
-# Step 2: Execute the compiled simulation.
-#         `vvp` runs the Icarus VVP bytecode; it will generate `dump.vcd`.
 vvp output.out
-
-# Step 3: Open the generated waveform file in GTKWave for analysis.
 gtkwave dump.vcd

@@ -25,12 +25,8 @@
 #   ./compile.sh
 # =============================================================================
 
-# Step 1: Clear the terminal for a clean build output.
 clear
 
-# Step 2: Compile all RTL and testbench sources into the simulation executable.
-#         -g2009 enables SystemVerilog-2009 features (required for control_unit.sv).
-#         -o output.out sets the output executable name.
 iverilog -g2009 -o output.out \
     src/frontend/rtl/program_counter.v \
     src/frontend/rtl/instruction_memory.v \
@@ -39,5 +35,4 @@ iverilog -g2009 -o output.out \
     src/frontend/rtl/control_unit.sv \
     src/frontend/rtl/alu.v \
     src/frontend/tb/tb_cpu.v \
-    src/frontend/vr16_cpu.v 
-
+    src/frontend/vr16_cpu.v

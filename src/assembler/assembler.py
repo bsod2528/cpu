@@ -44,11 +44,7 @@ from pathlib import Path
 
 from colorama import Fore, Style
 
-from assembler.baseclass import (
-    OpcodeNotPresent,
-    RegisterNotPresent,
-    SourceNotFound,
-)
+from assembler.baseclass import OpcodeNotPresent, RegisterNotPresent, SourceNotFound
 from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,

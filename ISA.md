@@ -1,84 +1,84 @@
-# VR16-ISA alpha
+# VR16-ISA
 
-> [!IMPORTANT]
-> The entire architecture is subject to change.
+## Instruction Summary
 
-Please don't mind my poor markdown skills.
+### Raw Opcode Instructions
+| Mnemonic | Opcode (4-bit) | Operand Format | Immediate Value Width (if any) |
+| --- | --- | --- | --- |
+| `add` | `0000` | `store_at`, `operand_one`, `operand_two` | None | 
+| `addi` | `0001` | `store_at`, `imm10` | 10-bit | 
+| `sub` | `0010` | `store_at`, `operand_one`, `operand_two` | None | 
+| `subi` | `0011` | `store_at`, `imm10` | 10-bit |
+| `mul` | `0100` | `store_at`,` `operand_one, `operand_two` | None |
+| `muli` | `0101` | `store_at`, `imm10` | 10-bit |
+| `div` | `0110` | `store_at`, `operand_one`, `operand_two` | None |
+| `divi` | `0111` | `store_at`, `imm10` | 10-bit |
+| `shift` | `1000` | `shift_at`, `direction` | 9-bit |
+| `jmp` | `1001` | `jump_address` | 12-bit |
+| `cjmp` | `1010` | `reg_to_check`, `condition`, `jump_address` | 8-bit |
+| `and` | `1011` | `store_at`, `operand_one`, `operand_two` | None |
+| `or` | `1100` | `store_at`, `operand_one`,`operand_two` | None |
+| `not` | `1101` | `store_at`, `operand_one` | None |
+| `xor` | `1110` | `store_at`, `operand_one`, `operand_two` | None |
+| `halt` | `1111` | no operands | None |
 
-## Instruction summary
+<!-- 
 
-| Mnemonic | Opcode (4-bit) | Operand format | Immediate width (if any) | Implementation status (implemented/decoder-only/planned) |
-| --- | --- | --- | --- | --- |
-| `ADD` | `0000` | `store_at, operand_one, operand_two` | None | implemented |
-| `ADDI` | `0001` | `store_at, imm10` | 10-bit | implemented |
-| `SUB` | `0010` | `store_at, operand_one, operand_two` | None | implemented |
-| `SUBI` | `0011` | `store_at, imm10` | 10-bit | implemented |
-| `MUL` | `0100` | `store_at, operand_one, operand_two` | None | implemented |
-| `MULI` | `0101` | `store_at, imm10` | 10-bit | implemented |
-| `DIV` | `0110` | `store_at, operand_one, operand_two` | None | implemented |
-| `DIVI` | `0111` | `store_at, imm10` | 10-bit | implemented |
-| `STOREI` | `1000` | `reg_to_store_in, imm8` | 8-bit | decoder-only |
-| `JUMP` | `1001` | `jump_address` | 12-bit | implemented |
-| `DELETE` | `1010` | `destination_register` | None | planned |
-| `AND` | `1011` | `store_at, operand_one, operand_two` | None | implemented |
-| `OR` | `1100` | `store_at, operand_one, operand_two` | None | implemented |
-| `NOT` | `1101` | `store_at, operand_one` | None | implemented |
-| `XOR` | `1110` | `store_at, operand_one, operand_two` | None | implemented |
-| `HALT` | `1111` | no operands | None | implemented |
+TODO:
+### Pseudo Instructions
+| Mnemonic | Operand Format | 
+| --- | --- |
+| `mov` | `store_at` | 
+| `del` | `store_at` |
+-->
+
+- - - 
 
 ## Arithmetic instructions
 
-1. `ADD`:
-
+1. `add`:
 ```md
 0000 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-2. `ADDI`:
-
-  ```md
+2. `addi`:
+```md
 0001 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
-3. `SUB`:
-
+3. `sub`:
 ```md
 0010 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-4. `SUBI`:
-
+4. `subi`:
 ```md
 0011 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
-5. `MUL`:
-
+5. `mul`:
 ```md
 0100 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-6. `MULI`:
-
+6. `muli`:
 ```md
 0101 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
 ```
 
-7. `DIV`:
-
+7. `div`:
 ```md
 0110 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-8. `DIVI`:
-
+8. `divi`:
 ```md
 0111 | 00 | 0000000000
 opcode | store_at | 10-bit immediate value
@@ -105,8 +105,8 @@ For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encod
 > **Assembler validation rule (immediate arithmetic family):** non-base-10 literals or values outside `0..1023` raise `Invalid immediate ... Expected a base-10 integer in range 0 to 1023.`
 
 #### Worked examples
-
-1) `ADDI r1, 5`
+<!-- `)` used don't work -->
+1. `addi r1, 5`
 
 - Before: `R1 = 12`
 - Encoded fields:
@@ -119,36 +119,31 @@ For all immediate arithmetic opcodes (`0001`, `0011`, `0101`, `0111`), the encod
   - `operand_two = zero_extend(5) = 5`
 - After: `R1 = 17`
 
-2) `SUBI r2, 3`
+2. `subi r2, 3`
 
 - Before: `R2 = 20`
 - 16-bit instruction: `0011 10 0000000011`
 - After: `R2 = 17`
 
-3) `MULI r0, 4`
+3. `muli r0, 4`
 
 - Before: `R0 = 7`
 - 16-bit instruction: `0101 00 0000000100`
 - After: `R0 = 28`
 
-4) `DIVI r3, 6`
+4. `divi r3, 6`
 
 - Before: `R3 = 30`
 - 16-bit instruction: `0111 11 0000000110`
 - After: `R3 = 5`
 
-9. `STOREI`:
-
+9. `shift`:
 ```md
-1000 | xx | 00 | 00000000
-opcode | dont-care | reg_to_store_in | 8-bit immediate value
+1000 | 00 | 0 | 00000000
+opcode | shift_at | direction | 9-bit shift amount
 ```
 
-> [!NOTE]
-> `STOREI` is decoded by the instruction decoder (opcode `1000`) but is **not yet implemented** in the control unit or assembler. It stores an 8-bit immediate directly into a register. Since `ADDI` covers the same use-case with a 10-bit immediate in accumulator style, `STOREI` may be removed or repurposed in a future ISA revision.
-
-10. `JUMP`:
-
+10. `jmp`:
 ```md
 1001 | 000000000000 |
 opcode | jump_to_12_bit_address for now
@@ -168,46 +163,53 @@ Any future instruction that carries an immediate/address field should follow the
 - the accepted range is the instruction field width interpreted as **unsigned**,
 - out-of-range or non-decimal input should raise an `Invalid ... Expected a base-10 integer in range ...` error matching the extractor style.
 
-11. `DELETE`:
-
+13. `cjmp`:
 ```md
-1010 | 00 | xxxxxxxxxx
-opcode | destination_register | dont-care values
+1010 | 00 | 00 | 00000000
+opcode | reg_to_check | condition | 8-bit jump address
 ```
 
-12. `AND`:
+> `jeq` - 00 - jump equal - if `x == y`
+> `jne` - 01 - jump not equal to - if `x != y`
+> `jgt` - 10 - jump greater than - if `x > y`
+> `jlt` - 11 - jump less than - if `x < y`
 
+12. `and`:
 ```md
 1011 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-13. `OR`:
-
+13. `or`:
 ```md
 1100 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-14. `NOT`:
-
+14. `not`:
 ```md
 1101 | 00 | 00 | xxxxxxxx
 opcode | store_at | operand_one | dont-care values
 ```
 
-15. `XOR`:
-
+15. `xor`:
 ```md
 1110 | 00 | 00 | 00 | xxxxxx
 opcode | store_at | operand_one | operand_two | dont-care values
 ```
 
-16. `HALT`:
-
+16. `halt`:
 ```md
 1111 | xxxxxxxxxxxx
 opcode | dont-care values
 ```
 
 Kept only basic LOGIC operations as others can be done from these.
+
+<!-- ## Pseudo Instructions
+These instructions aren't built into the CPU, running other instructions gives the same output, thus they're called pseudo instructions.
+
+17. `mov`:
+```md
+mov 
+``` -->

@@ -31,7 +31,6 @@ Module-level constants:
 """
 
 from dataclasses import dataclass
-from difflib import get_close_matches
 
 from colorama import Back, Fore, Style
 

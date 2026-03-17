@@ -1,7 +1,8 @@
 """Module entrypoint for ``python -m assembler``."""
 
 import sys
-from assembler.assembler import main, AssemblerError
+
+from assembler.assembler import AssemblerError, main
 from assembler.baseclass import SourceNotFound
 
 if __name__ == "__main__":
