@@ -112,7 +112,6 @@ $ PYTHONPATH=src python3 -m assembler examples/vr-asm/compiled.asm mem/imem.mem
 ## Road-Map
 
 - [x] finish basic cpu
-- [ ] pipeline (depends on time)
 - [ ] finish physical design
 
 Refer the [CHANGELOG](./CHANGELOG.md) for a detailed commit history.

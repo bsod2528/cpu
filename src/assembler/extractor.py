@@ -352,7 +352,7 @@ def extract_shift(instruction: ParsedInstruction) -> str:
     Format::
         [opcode 4b][shift_at 2b][direction 1b][shift_ammount 9b]
     """
-    opcode: str = get_arithmetic_opcode(instruction.opcode)
+    opcode: str = get_data_opcode(instruction.opcode)
     operands: list[str] = _validate_operand_count(instruction, 3)
     store_at: str = decode_register(operands[0], instruction.line_number)
     direction: str = operands[1]

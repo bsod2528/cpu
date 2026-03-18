@@ -52,9 +52,6 @@ module vr16_cpu #(
     // all below instantiated signals are present within for "connection" so that
     // all data is flows inside the cpu
 
-    // -------------------------
-    // program counter signals
-    // -------------------------
     wire pc_increment_ip;        // Drives the PC increment input from the CU.
     wire pc_enable_jump_ip;      // Drives PC jump enable; sourced from CU.
     wire pc_enable_return_ip;    // Drives PC return enable (tied low — unused).
@@ -63,15 +60,9 @@ module vr16_cpu #(
     wire pc_jump_done_op;        // Acknowledges a completed jump back to the CU.
     wire [15:0] pc_counter_reg_op;   // Current instruction address fed to IMEM.
 
-    // ---------------------------
-    // instruction memory signals
-    // ---------------------------
     wire im_enable_imem_ip;       // IMEM read enable; de-asserted only on reset.
     wire [15:0] im_instruction_op; // Raw 16-bit instruction word from IMEM.
-
-    // ----------------------------
-    // instruction decoder signals
-    // ----------------------------
+    
     wire [1:0] id_operand_one_op;       // Source register 1 address.
     wire [1:0] id_operand_two_op;       // Source register 2 address.
     wire [1:0] id_store_at_op;          // Destination register address.
@@ -83,9 +74,6 @@ module vr16_cpu #(
     wire [15:0] id_twelve_bit_dont_care_op;// Lower 12 don't-care bits (debug).
     wire [15:0] id_jump_address_input_op;  // 12-bit jump address (zero-extended).
 
-    // -----------------------
-    // control unit signals
-    // -----------------------
     wire cu_enable_alu_op;           // Triggers an ALU computation.
     wire cu_enable_reg_write_op;     // Triggers a register-file write.
     wire cu_enable_pc_increment_op;  // Advances the PC by 1.
@@ -96,18 +84,12 @@ module vr16_cpu #(
     wire [1:0] cu_reg_read_address_two_op; // Read port 2 address for the reg file.
     wire [15:0] cu_operand_two_out_op;  // Immediate forwarded from CU to ALU mux.
     wire [15:0] cu_jump_address_out_op; // Jump target forwarded from CU to PC.
-    wire        cu_shift_dir_op;        // SHIFT direction: 0=SHL, 1=SHR.
+    wire cu_shift_dir_op;        // SHIFT direction: 0=SHL, 1=SHR.
     wire [8:0]  cu_shift_amount_op;     // SHIFT amount (9-bit).
 
-    // -----------
-    // alu signals
-    // -----------
     wire a_alu_done_op;       // Pulses high when the ALU result is ready.
     wire [15:0] a_result_op;  // 16-bit ALU computation result.
-
-    // -----------------------
-    // gp registers signals
-    // -----------------------
+    
     wire gpr_write_done_op;          // Pulses high when a register write is done.
     wire [15:0] gpr_reg_a_out_op;    // Current value of r0.
     wire [15:0] gpr_reg_b_out_op;    // Current value of r1.
@@ -127,10 +109,6 @@ module vr16_cpu #(
     wire [1:0] cu_cjmp_condition_ip;
     assign cu_cjmp_condition_ip = id_ten_bit_dont_care_op[1:0];
 
-    // -------------------------------------------------------------------------
-    // default connections
-    // Tie constant or derived signals that are not driven by sub-module outputs.
-    // -------------------------------------------------------------------------
     // IMEM is enabled whenever reset is not active.
     assign im_enable_imem_ip = ~global_reset;
     // Route the CU jump outputs directly to the PC inputs.
@@ -139,7 +117,8 @@ module vr16_cpu #(
     // Return-enable is not yet used; tied to 0.
     assign pc_enable_return_ip = 1'b0;
     // Assert the HALT flag to the PC when the current opcode is HALT (1111).
-    assign pc_flag_input_ip = (id_opcode_op == 4'b1111) ? 1'b1 : 1'b0;
+    // assign pc_flag_input_ip = (id_opcode_op == 4'b1111) ? 1'b1 : 1'b0;
+    assign pc_flag_input_ip = 1'b0; // disable, FSM handles HALT
 
     // -------------------------------------------------------------------------
     // extra muxed alu operand_two
@@ -149,9 +128,6 @@ module vr16_cpu #(
     wire [15:0] alu_operand_two;
     assign alu_operand_two = (cu_select_operation_op == 2'b01 || cu_select_operation_op == 2'b10) ? cu_operand_two_out_op : gpr_operand_two_reg_op;
 
-    // -------------------------------------------------------------------------
-    // instantiation of modules, i.e., wiring up all parts
-    // -------------------------------------------------------------------------
     program_counter vr16_pc(
         .clk(global_clk),
         .reset(global_reset),

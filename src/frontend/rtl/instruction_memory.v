@@ -89,11 +89,13 @@ module instruction_memory #(
         // Step 3: On reset, clear the instruction output to prevent stale data
         //         from propagating into the decoder on the next active cycle.
         if (reset)
-            instruction <= 16'b0000_0000_0000_0000;
+            instruction = 16'b0000_0000_0000_0000;
         // Step 4: When enabled, latch the instruction at the requested address.
         //         Only the lower 8 bits of the address bus are used to index
         //         the 256-entry array.
         else if (enable)
-            instruction <= imem[address[7:0]];
+            instruction = imem[address[7:0]];
+        else
+            instruction = 16'h0000;
     end
 endmodule

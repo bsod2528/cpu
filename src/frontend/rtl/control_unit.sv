@@ -81,7 +81,7 @@ module control_unit(
 
     // CJMP: value of the register being tested + condition bits from decoder
     input wire [15:0] reg_val,         // R[reg_to_work_on] read from register file
-    input wire [1:0]  cjmp_condition,  // ten_bit_dont_care[1:0] from decoder
+    input wire [1:0] cjmp_condition,  // ten_bit_dont_care[1:0] from decoder
 
     // output signals
     output reg enable_alu,
@@ -98,14 +98,14 @@ module control_unit(
     output reg [15:0] jump_address_out,
 
     // SHIFT: fed directly to ALU
-    output reg [8:0]  shift_amount,    // how many positions to shift
-    output reg        shift_dir        // 0 = SHL, 1 = SHR
+    output reg [8:0] shift_amount, // how many positions to shift
+    output reg shift_dir // 0 = SHL, 1 = SHR
 );
 
     // -------------------------------------------------------------------------
     // FSM state encoding — using SystemVerilog enum for readability and safety.
     // -------------------------------------------------------------------------
-    
+
     // the decimal (base-10) numbers commented next to each state is given
     // for easier verification of state of cpu while viewing waveforms.
     typedef enum logic [2:0] {
@@ -114,7 +114,8 @@ module control_unit(
         EXECUTE = 3'b010,   // 2
         WRITE = 3'b011,     // 3
         JUMP = 3'b100,      // 4
-        HALT = 3'b111       // 7
+        HALT = 3'b111,      // 7
+        REFETCH = 3'b101    // 5
     } state_t;
 
     state_t current_state, next_state;
@@ -124,6 +125,8 @@ module control_unit(
     // next_do_cjmp: combinational value computed in always@(*), latched on clock edge.
     reg do_cjmp_reg;
     reg next_do_cjmp;
+    reg [15:0] cjmp_addr_reg;
+    reg [15:0] next_cjmp_address;
 
     // -------------------------------------------------------------------------
     // Retained original parameter-style definitions for reference (unused now).
@@ -144,21 +147,23 @@ module control_unit(
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             current_state <= FETCH;
-            do_cjmp_reg   <= 1'b0;
+            do_cjmp_reg <= 1'b0;
+            cjmp_addr_reg <= 16'h0000;
         end else begin
             current_state <= next_state;
-            do_cjmp_reg   <= next_do_cjmp;
+            do_cjmp_reg <= next_do_cjmp;
+            cjmp_addr_reg <= next_cjmp_address;
         end
     end
 
     // always @(posedge clk or posedge reset) begin
-    // the above one line has caused me 1 year worth of break down, 
+    // the above one line has caused me 1 year worth of break down,
     // making me to think i'm a fool and put me to
     // hell worths of pain and ruined 1 year of my mental health
     // Saint: The combinational vs. clocked always block distinction is a genuine
     // Saint: trap in Verilog. The fact that you pinned it down and fixed it is
     // Saint: what separates persistent engineers from the rest. Respect.
-    
+
     // -------------------------------------------------------------------------
     // Combinational block: compute next_state and all output signals purely
     // from the current state and its input conditions (no clock edge).
@@ -175,13 +180,15 @@ module control_unit(
         next_state = current_state;
         next_do_cjmp = 1'b0;
         shift_amount = 9'b0;
-        shift_dir    = 1'b0;
+        shift_dir = 1'b0;
+        next_do_cjmp = 1'b0;
+        next_cjmp_address = 16'h0000;
 
         // Step 2: Route decoder outputs directly to the data-path controls.
         reg_write_address = store_at;
         reg_read_address_one = operand_one;
         reg_read_address_two = operand_two;
-        jump_address_out = jump_address;
+        jump_address_out = 16'h0000;
 
         // Step 3: State-machine transition and output logic.
         case (current_state)
@@ -240,9 +247,9 @@ module control_unit(
                     // -- SHIFT instruction --
                     // imm_value[9] = shift_dir, imm_value[8:0] = shift_amount
                     4'b1000: begin
-                        enable_alu   = 1'b1;
+                        enable_alu = 1'b1;
                         select_operation = 2'b00;
-                        shift_dir    = immediate_value[9];
+                        shift_dir = immediate_value[9];
                         shift_amount = immediate_value[8:0];
                         if (alu_done)
                             next_state = WRITE;
@@ -261,6 +268,7 @@ module control_unit(
                             2'b11: next_do_cjmp = ($signed(reg_val) < 0);      // JLT
                             default: next_do_cjmp = 1'b0;
                         endcase
+                        next_cjmp_address = {8'b0, immediate_value[7:0]};
                         next_state = JUMP;
                     end
 
@@ -287,6 +295,7 @@ module control_unit(
             // Saint: The original WRITE used to wait for reg_write_done; the
             // Saint: simplified version below always advances in one cycle since
             // Saint: the register file write is combinationally fast enough.
+            // bsod2528: Acknowledged and keeping it commented just for future reference.
 
             // ------------------------------------------------------------------
             // WRITE: Commit the ALU result to the register file and advance the
@@ -308,16 +317,32 @@ module control_unit(
             //                   otherwise just increments PC and returns to FETCH.
             // ------------------------------------------------------------------
             JUMP: begin
+                // bsod2528:
+                // Preserve do_cjmp_reg while we stay in JUMP - the FSM spends
+                // two cycles here (first to assert enable_jump, second to see
+                // jump_done).Without this, the sequential block clears
+                // do_cjmp_reg (via the combinational default next_do_cjmp=0)
+                // on the second cycle, causing the CJMP to take the
+                // "condition false" branch and wrongly increment the PC.
+                next_do_cjmp = do_cjmp_reg;
+                next_cjmp_address = cjmp_addr_reg;
+
                 if (opcode == 4'b1010 && !do_cjmp_reg) begin
-                    // Condition was false — skip jump, advance normally
                     enable_pc_increment = 1'b1;
                     next_state = FETCH;
                 end else begin
-                    // Unconditional jump OR condition was true
+                    if (opcode == 4'b1010)
+                        jump_address_out = cjmp_addr_reg;
+                    else
+                        jump_address_out = jump_address;
                     enable_jump = 1'b1;
                     if (jump_done)
-                        next_state = FETCH;
+                        next_state = REFETCH;
                 end
+            end
+
+            REFETCH: begin
+                next_state = FETCH;
             end
 
             // ------------------------------------------------------------------

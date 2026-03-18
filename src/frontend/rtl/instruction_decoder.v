@@ -186,7 +186,7 @@ module instruction_decoder(
                 end
                 4'b1010: begin // CJMP (conditional jump)
                     reg_to_work_on = instruction[11:10];
-                    imm_value      = {8'b0, instruction[7:0]};
+                    imm_value = {8'b0, instruction[7:0]};
                     ten_bit_dont_care = {14'b0, instruction[9:8]};
                 end
 
