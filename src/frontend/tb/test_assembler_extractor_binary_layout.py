@@ -10,12 +10,13 @@ from pathlib import Path
 from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,
-    extract_delete,
-    extract_halt,
+    extract_conditional_jump,
     extract_immediate_arithmetic,
     extract_jump,
     extract_logic_main,
-    extract_logic_side,
+    extract_not,
+    extract_shift,
+    return_halt,
 )
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
@@ -32,7 +33,7 @@ def test_extractor_outputs_exact_expected_16bit_binary_strings() -> None:
         (ParsedInstruction("and", ["r3", "r1", "r0"], 3), "1011110100000000"),
         (ParsedInstruction("not", ["r1", "r2"], 4), "1101011000000000"),
         (ParsedInstruction("jump", ["42"], 5), "1001000000101010"),
-        (ParsedInstruction("delete", ["r3"], 6), "1010110000000000"),
+        (ParsedInstruction("addi", ["r3"], 6), "000111000000000"),
         (ParsedInstruction("halt", [], 7), "1111000000000000"),
     ]
 
@@ -40,10 +41,9 @@ def test_extractor_outputs_exact_expected_16bit_binary_strings() -> None:
         "add": extract_arithmetic,
         "addi": extract_immediate_arithmetic,
         "and": extract_logic_main,
-        "not": extract_logic_side,
+        "not": extract_not,
         "jump": extract_jump,
-        "delete": extract_delete,
-        "halt": extract_halt,
+        "halt": return_halt,
     }
 
     for instruction, expected in fixtures:
@@ -58,7 +58,7 @@ def test_generated_mem_loads_without_unknowns_in_instruction_memory() -> None:
 add r0, r1, r2
 and r3, r2, r1
 not r0, r3
-delete r1
+addi r3, 0
 halt
 end:
 """
