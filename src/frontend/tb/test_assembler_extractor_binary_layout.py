@@ -10,12 +10,10 @@ from pathlib import Path
 from assembler.extractor import (
     ParsedInstruction,
     extract_arithmetic,
-    extract_conditional_jump,
     extract_immediate_arithmetic,
     extract_jump,
     extract_logic_main,
     extract_not,
-    extract_shift,
     return_halt,
 )
 
