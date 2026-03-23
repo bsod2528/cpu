@@ -78,7 +78,29 @@ module instruction_memory #(
         instruction = 16'b0000_0000_0000_0000;
         $readmemb(MEM_FILE, imem);
     end
-
+    
+    // Terasic DE0 implementation involved the following:
+    // - commenting out lines 77 - 80
+    // - commenting out the actual logic the IMEM.
+    // - utilise the code below
+    // 
+    // always @ (posedge clk or posedge reset) begin
+    //     if (reset)
+    //         instruction <= 16'b0000_0000_0000_0000;
+    //     else if (enable) begin
+    //         case (address[7:0])
+    //             8'd0: instruction <=16'b0000_0000_0000_0000;
+    //             ...
+    //         default: instruction <= 16'b1111000000000000; // halt for everything else
+    //     endcase
+    //     end else
+    //         instruction <= 16'h0000;
+    //     end
+    // 
+    // This could've been done using a memory initialisation file in quartus, but I struggled with it.
+    // So I just raw dogged it.
+    
+    
     // -------------------------------------------------------------------------
     // Clocked read path.
     // Priority: reset > enable (read) > hold (output unchanged).
