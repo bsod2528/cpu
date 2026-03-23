@@ -17,49 +17,19 @@
 `timescale 1ns / 1ps
 
 // =============================================================================
-// File      : control_unit.sv
-// Module    : control_unit
-// Brief     : Finite-state-machine (FSM) based control unit for the VR16 CPU.
-//
 // Description:
-//   Implements a 6-state Mealy/Moore FSM:
-//     FETCH   -> loads the next instruction from memory.
-//     DECODE  -> passes the instruction to the decoder and reads operands.
-//     EXECUTE -> enables the ALU or prepares a jump; waits for completion.
-//     WRITE   -> writes ALU result back to the register file and bumps the PC.
-//     JUMP    -> drives `enable_jump` until the PC confirms the jump is done.
-//     HALT    -> terminal state; CPU stays here until reset.
+//  Implements a 7-state Mealy/Moore FSM:
+//       FETCH   -> loads the next instruction from memory.
+//       DECODE  -> passes the instruction to the decoder and reads operands.
+//       EXECUTE -> enables the ALU or prepares a jump; waits for completion.
+//       WRITE   -> writes ALU result back to the register file and bumps the PC.
+//       JUMP    -> drives `enable_jump` until the PC confirms the jump is done.
+//       REFETCH -> allows instruction memory to latch the new PC address after
+//              a jump before DECODE begins.
+//       HALT    -> terminal state; CPU stays here until reset.
 //
-//   The control unit drives all enable/select signals for the ALU, register
-//   file, program counter, and data-path multiplexers.
-//
-// Parameters : none
-//
-// Inputs:
-//   clk             - System clock; state transitions on rising edge.
-//   reset           - Active-high reset; returns FSM to FETCH state.
-//   alu_done        - Asserted by the ALU when a computation finishes.
-//   reg_write_done  - Asserted by the register file when a write completes.
-//   jump_done       - Asserted by the PC when a jump has been applied.
-//   store_at        - Destination register address from the instruction decoder.
-//   operand_one     - Source register address 1 from the instruction decoder.
-//   operand_two     - Source register address 2 from the instruction decoder.
-//   opcode          - 4-bit operation code from the instruction decoder.
-//   immediate_value - 16-bit zero-extended immediate from the instruction decoder.
-//   jump_address    - 12-bit jump target (zero-extended) from the decoder.
-//
-// Outputs:
-//   enable_alu         - Asserted during EXECUTE to trigger an ALU operation.
-//   enable_reg_write   - Asserted during WRITE to store the ALU result.
-//   enable_pc_increment- Asserted during WRITE so the PC advances to the next
-//                        instruction after a successful write.
-//   enable_jump        - Asserted during JUMP so the PC loads the jump target.
-//   select_operation   - 2-bit mux select: 00=reg-reg, 01=immediate, 10=reg+imm.
-//   reg_write_address  - Register file write port address.
-//   reg_read_address_one - Register file read port 1 address.
-//   reg_read_address_two - Register file read port 2 address.
-//   operand_two_out    - Forwarded immediate value when select_operation != 00.
-//   jump_address_out   - Forwarded jump target address driven to the PC.
+//  The control unit drives all enable/select signals for the ALU, register
+//  file, program counter, and data-path multiplexers.
 // =============================================================================
 
 module control_unit(
@@ -79,8 +49,8 @@ module control_unit(
     input wire [15:0] immediate_value,
     input wire [15:0] jump_address,
 
-    // CJMP: value of the register being tested + condition bits from decoder
-    input wire [15:0] reg_val,         // R[reg_to_work_on] read from register file
+    // cjmp: value of the register being tested + condition bits from decoder
+    input wire [15:0] reg_val, // R[reg_to_work_on] read from register file
     input wire [1:0] cjmp_condition,  // ten_bit_dont_care[1:0] from decoder
 
     // output signals
@@ -97,14 +67,10 @@ module control_unit(
     output reg [15:0] operand_two_out,
     output reg [15:0] jump_address_out,
 
-    // SHIFT: fed directly to ALU
+    // shift: fed directly to ALU
     output reg [8:0] shift_amount, // how many positions to shift
     output reg shift_dir // 0 = SHL, 1 = SHR
 );
-
-    // -------------------------------------------------------------------------
-    // FSM state encoding — using SystemVerilog enum for readability and safety.
-    // -------------------------------------------------------------------------
 
     // the decimal (base-10) numbers commented next to each state is given
     // for easier verification of state of cpu while viewing waveforms.
@@ -128,9 +94,8 @@ module control_unit(
     reg [15:0] cjmp_addr_reg;
     reg [15:0] next_cjmp_address;
 
-    // -------------------------------------------------------------------------
     // Retained original parameter-style definitions for reference (unused now).
-    // -------------------------------------------------------------------------
+    //
     // parameter FETCH = 3'b000;
     // parameter DECODE = 3'b001;
     // parameter EXECUTE = 3'b010;
@@ -140,10 +105,7 @@ module control_unit(
 
     // reg [2:0] current_state, next_state;
 
-    // -------------------------------------------------------------------------
-    // Sequential block: update the current state on every rising clock edge.
-    // On reset, unconditionally return to FETCH (the pipeline start state).
-    // -------------------------------------------------------------------------
+
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             current_state <= FETCH;
@@ -157,7 +119,8 @@ module control_unit(
     end
 
     // always @(posedge clk or posedge reset) begin
-    // the above one line has caused me 1 year worth of break down,
+    // 
+    // bsod2528: The above one line has caused me 1 year worth of break down,
     // making me to think i'm a fool and put me to
     // hell worths of pain and ruined 1 year of my mental health
     // Saint: The combinational vs. clocked always block distinction is a genuine
@@ -283,15 +246,16 @@ module control_unit(
                 endcase
             end
 
-//            WRITE: begin
-//                enable_reg_write = 1'b1;
-//                next_state = FETCH;
-//                enable_pc_increment = 1'b1;
-//                if (reg_write_done) begin
-//                    next_state = FETCH;
-//                    enable_pc_increment = 1'b1;
-//                end
-//            end
+            //  WRITE: begin
+            //      enable_reg_write = 1'b1;
+            //      next_state = FETCH;
+            //      enable_pc_increment = 1'b1;
+            //      if (reg_write_done) begin
+            //          next_state = FETCH;
+            //          enable_pc_increment = 1'b1;
+            //      end
+            //  end
+            // 
             // Saint: The original WRITE used to wait for reg_write_done; the
             // Saint: simplified version below always advances in one cycle since
             // Saint: the register file write is combinationally fast enough.

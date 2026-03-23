@@ -17,10 +17,6 @@
 `timescale 1ns / 1ps
 
 // =============================================================================
-// File      : vr16_cpu.v
-// Module    : vr16_cpu
-// Brief     : Top-level integration module for the VR16 16-bit RISC processor.
-//
 // Description:
 //   Instantiates and wires together all sub-modules of the VR16 pipeline:
 //     - program_counter     : maintains and updates the instruction address.
@@ -33,14 +29,6 @@
 //   An extra combinational mux (`alu_operand_two`) selects between the
 //   register-file read value and the immediate value forwarded by the control
 //   unit, based on `select_operation`.
-//
-// Parameters:
-//   IMEM_FILE - Path to the binary instruction memory initialisation file.
-//               Default: "mem/imem.mem".
-//
-// Inputs:
-//   global_clk   - Master clock for the entire processor.
-//   global_reset - Active-high reset; propagated to every sub-module.
 // =============================================================================
 
 module vr16_cpu #(

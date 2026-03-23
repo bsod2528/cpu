@@ -17,45 +17,23 @@
 `timescale 1ns / 1ps
 
 // =============================================================================
-// File      : gp_registers.v
-// Module    : gp_registers
-// Brief     : General-purpose register file for the VR16 processor.
-//
 // Description:
-//   Holds four 16-bit general-purpose registers: r0 (reg_a), r1 (reg_b),
-//   r2 (reg_c), and r3 (reg_d).
+//  Holds four 16-bit general-purpose registers: r0 (reg_a), r1 (reg_b),
+//  r2 (reg_c), and r3 (reg_d).
 //
-//   Write path (clocked):
-//     On a rising clock edge, if `write_enable` is asserted, the value on
-//     `alu_result` is stored into the register selected by `store_at`.
-//     `write_done` is pulsed high for one clock cycle to acknowledge the write.
+//  Write path (clocked):
+//      On a rising clock edge, if `write_enable` is asserted, the value on
+//      `alu_result` is stored into the register selected by `store_at`.
+//      `write_done` is pulsed high for one clock cycle to acknowledge the write.
 //
-//   Read path (combinational):
-//     `operand_one_reg` and `operand_two_reg` are continuously driven by the
-//     registers addressed by `read_operand_one_reg` and `read_operand_two_reg`
-//     respectively.  Reads are zero-latency; they reflect the current register
-//     state immediately.
+//  Read path (combinational):
+//      `operand_one_reg` and `operand_two_reg` are continuously driven by the
+//      registers addressed by `read_operand_one_reg` and `read_operand_two_reg`
+//      respectively.  Reads are zero-latency; they reflect the current register
+//      state immediately.
 //
-//   All four register values are also exposed on individual output wires
-//   (reg_a_out … reg_d_out) for debug and result observation.
-//
-// Inputs:
-//   clk                 - System clock; write path is triggered on rising edge.
-//   reset               - Active-high reset; clears all registers and write_done.
-//   write_enable        - Asserted by the control unit to initiate a write.
-//   store_at            - 2-bit address selecting the destination register.
-//   read_operand_one_reg- 2-bit address selecting the first read register.
-//   read_operand_two_reg- 2-bit address selecting the second read register.
-//   alu_result          - 16-bit value produced by the ALU to be written.
-//
-// Outputs:
-//   write_done      - Pulses high for one cycle when a write succeeds.
-//   reg_a_out       - Continuous output of register r0.
-//   reg_b_out       - Continuous output of register r1.
-//   reg_c_out       - Continuous output of register r2.
-//   reg_d_out       - Continuous output of register r3.
-//   operand_one_reg - Combinational read of the register at read_operand_one_reg.
-//   operand_two_reg - Combinational read of the register at read_operand_two_reg.
+//  All four register values are also exposed on individual output wires
+//  (reg_a_out … reg_d_out) for debug and result observation.
 // =============================================================================
 
 module gp_registers(

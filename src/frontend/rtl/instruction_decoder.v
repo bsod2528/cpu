@@ -17,41 +17,20 @@
 `timescale 1ns / 1ps
 
 // =============================================================================
-// File      : instruction_decoder.v
-// Module    : instruction_decoder
-// Brief     : Combinational instruction decoder for the VR16 processor.
+// Decodes a 16-bit instruction word into its constituent fields so that
+// the control unit and data-path can act on them independently.
+// The decoder is fully combinational (always @(*)) so decoded fields
+// are valid one gate-delay after the instruction input changes.
 //
-// Description:
-//   Decodes a 16-bit instruction word into its constituent fields so that
-//   the control unit and data-path can act on them independently.
-//   The decoder is fully combinational (always @(*)) so decoded fields
-//   are valid one gate-delay after the instruction input changes.
+// On reset, all output registers are forced to zero.
 //
-//   On reset, all output registers are forced to zero.
+// Instruction format (generic layout — see ISA.md for per-opcode details):
+// - [15:12] opcode - (4 bits)
+// - [11:10] store_at - (destination register address)
+// - [9:8] operand_one - (source register 1 address)
+// - [7:6] operand_two - (source register 2 address)
+// - [5:0] dont-care / immediate / jump address (depends on opcode)
 //
-//   Instruction format (generic layout — see ISA.md for per-opcode details):
-//     [15:12] opcode          (4 bits)
-//     [11:10] store_at        (destination register address)
-//     [ 9: 8] operand_one     (source register 1 address)
-//     [ 7: 6] operand_two     (source register 2 address)
-//     [ 5: 0] dont-care / immediate / jump address (depends on opcode)
-//
-// Inputs:
-//   clk         - Clock (connected but decoder is combinational; unused here).
-//   reset       - Active-high reset; forces all outputs to zero.
-//   instruction - 16-bit instruction word from the instruction memory.
-//
-// Outputs:
-//   operand_one         - 2-bit source register 1 address.
-//   operand_two         - 2-bit source register 2 address.
-//   store_at            - 2-bit destination register address.
-//   reg_to_work_on      - 2-bit register address for STOREI / DELETE ops.
-//   opcode              - 4-bit operation code.
-//   imm_value           - 16-bit zero-extended immediate value.
-//   six_bit_dont_care   - 16-bit zero-extended lower 6 bits (unused fields).
-//   ten_bit_dont_care   - 16-bit zero-extended lower 10 bits (unused fields).
-//   twelve_bit_dont_care- 16-bit zero-extended lower 12 bits (unused fields).
-//   jump_address_input  - 16-bit zero-extended 12-bit jump target address.
 // =============================================================================
 
 // Instruction bits be like:
