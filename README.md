@@ -1,6 +1,6 @@
 # cpu
 
-[Documentation](https://bsod2528.github.io/pages/projects/vr16.html) | [Blogs](https://bsod2528.github.io/pages/tags.html#soc-dev)
+[Documentation](https://bsod2528.github.io/pages/projects/vr16.html) | [Blogs](https://bsod2528.github.io/pages/tags.html#cpu-dev---4)
 
 VR16 is a basic RISC processor designed and written in Verilog. As time permits, this will be improved, and the backend design will also be updated.
 
