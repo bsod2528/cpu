@@ -31,11 +31,18 @@
 //   unit, based on `select_operation`.
 // =============================================================================
 
+// bsod2528: Ensure to comment out the parameters when running on the FPGA.
 module vr16_cpu #(
     parameter IMEM_FILE = "mem/imem.mem"
 )(
     input wire global_clk,
-    input wire global_reset
+    input wire global_reset,
+
+    // all created for synthesis and running the CPU on the FPGA.
+    output wire reg_a_out,
+    output wire reg_b_out,
+    output wire reg_c_out,
+    output wire reg_d_out
 );
     // all below instantiated signals are present within for "connection" so that
     // all data is flows inside the cpu
@@ -50,7 +57,7 @@ module vr16_cpu #(
 
     wire im_enable_imem_ip;       // IMEM read enable; de-asserted only on reset.
     wire [15:0] im_instruction_op; // Raw 16-bit instruction word from IMEM.
-    
+
     wire [1:0] id_operand_one_op;       // Source register 1 address.
     wire [1:0] id_operand_two_op;       // Source register 2 address.
     wire [1:0] id_store_at_op;          // Destination register address.
@@ -77,7 +84,7 @@ module vr16_cpu #(
 
     wire a_alu_done_op;       // Pulses high when the ALU result is ready.
     wire [15:0] a_result_op;  // 16-bit ALU computation result.
-    
+
     wire gpr_write_done_op;          // Pulses high when a register write is done.
     wire [15:0] gpr_reg_a_out_op;    // Current value of r0.
     wire [15:0] gpr_reg_b_out_op;    // Current value of r1.
@@ -211,4 +218,9 @@ module vr16_cpu #(
         .operand_one_reg(gpr_operand_one_reg_op),
         .operand_two_reg(gpr_operand_two_reg_op)
     );
+
+    assign reg_a_out = gpr_reg_a_out_op;
+    assign reg_b_out = gpr_reg_b_out_op;
+    assign reg_c_out = gpr_reg_c_out_op;
+    assign reg_d_out = gpr_reg_d_out_op;
 endmodule

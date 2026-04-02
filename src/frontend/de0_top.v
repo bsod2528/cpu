@@ -1,5 +1,13 @@
-// This has been created for implementing the CPU onto the Terasic DE0 Board.
-// Further documentation of sorts will be updated in future!
+// =============================================================================
+// Description:
+//  This has been created for implementing the CPU onto the Terasic DE0 board.
+//  Refer the given link below for the pin assignment (specifically for the DE0 board):
+//  https://www.terasic.com.tw/attachment/archive/371/DE0_User_manual_v1.1.pdf
+//      - HEX0 - 0th 7-segment display
+//      - HEX1 - 1st 7-segment display
+//      - HEX2 - 2nd 7-segment display
+//      - HEX3 - 3rd 7-segment display
+// =============================================================================
 
 module de0_top (
     input wire CLOCK_50,
@@ -13,6 +21,10 @@ module de0_top (
     // Reset: KEY[2] held as reset (active-low, so invert it)
     // KEY[0] = next register
     // KEY[1] = previous register
+    // Since there are only 4 registers, once crossing the register count the "next" or
+    // "previous" registers overflow.
+    // So upon pressing KEY[0] while being at r3, the next register would be r0.
+    // Similarly upon pressing KEY[1] while being at r0, the previous register would be r3.
     wire reset = ~KEY[2];
 
     // Clock divider

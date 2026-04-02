@@ -33,6 +33,7 @@
 // bsod2528: Thanks eda playground && whoever wrote that (they won't read but still, it's from the bottom of my heart)
 // Saint: Great acknowledgement — crediting inspiration is good engineering culture.
 
+// bsod2528: Ensure to comment out the parameters when running on the FPGA.
 module instruction_memory #(
     parameter MEM_FILE = "mem/imem.mem"
 )(
@@ -41,7 +42,7 @@ module instruction_memory #(
     input wire enable,
 
     input [15:0] address,
-    
+
     output reg [15:0] instruction
 );
     reg [15:0] imem [0:255]; // just 256 instructions for now which will.
@@ -51,12 +52,13 @@ module instruction_memory #(
         instruction = 16'b0000_0000_0000_0000;
         $readmemb(MEM_FILE, imem);
     end
-    
+
+    // bsod2528:
     // Terasic DE0 implementation involved the following:
     // - commenting out lines 77 - 80
     // - commenting out the actual logic the IMEM.
     // - utilise the code below
-    // 
+    //
     // always @ (posedge clk or posedge reset) begin
     //     if (reset)
     //         instruction <= 16'b0000_0000_0000_0000;
@@ -69,10 +71,10 @@ module instruction_memory #(
     //     end else
     //         instruction <= 16'h0000;
     //     end
-    // 
+    //
     // This could've been done using a memory initialisation file in quartus, but I struggled with it.
     // So I just raw dogged it.
-    
+
     always @ (posedge clk or posedge reset) begin
         $display("AT: %t", $time);
         if (reset)
