@@ -1,0 +1,15 @@
+{
+    "DESIGN_NAME": "vr16_cpu",
+    "VERILOG_FILES": [
+        "src/frontend/vr16_cpu.v", 
+        "src/frontend/rtl/alu.v",
+        "src/frontend/rtl/control_unit.sv", 
+        "src/frontend/rtl/gp_registers.v",
+        "src/frontend/rtl/instruction_decoder.v",
+        "src/frontend/rtl/instruction_memory.v",
+        "src/frontend/rtl/program_counter.v"
+    ],
+    "CLOCK_PORT": "global_clk",
+    "CLOCK_PERIOD": 50,
+    "FP_CORE_UTIL": 60
+}

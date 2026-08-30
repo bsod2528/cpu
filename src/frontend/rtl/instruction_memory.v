@@ -76,7 +76,7 @@ module instruction_memory #(
     // So I just raw dogged it.
 
     always @ (posedge clk or posedge reset) begin
-        $display("AT: %t", $time);
+        //$display("AT: %t", $time);
         if (reset)
             instruction = 16'b0000_0000_0000_0000;
         else if (enable)
